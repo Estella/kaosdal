@@ -220,7 +220,7 @@ static void punish_badguy(struct chanset_t *chan, char *whobad,
       (!chan_op(fr) && (!glob_op(fr) || chan_deop(fr)))) &&
       !chan_sentkick(m) && (me_op(chan) || (me_halfop(chan) &&
       !chan_hasop(m) && (strchr(NOHALFOPS_MODES, 'b') == NULL)))) {
-    dprintf(DP_MODE, "KICK %s %s :%s\n", chan->name, badnick, kick_msg);
+    dprintf(DP_MODE, ":%s KICK %s %s :%s\n", botname,chan->name, badnick, kick_msg);
     m->flags |= SENTKICK;
   }
 }
@@ -282,9 +282,9 @@ static int hand_on_chan(struct chanset_t *chan, struct userrec *u)
 static void refresh_who_chan(char *channame)
 {
   if (use_354)
-    dprintf(DP_MODE, "WHO %s c%%chnuf\n", channame);
+    dprintf(DP_MODE, ":%s WHO %s c%%chnuf\n", botname,channame);
   else
-    dprintf(DP_MODE, "WHO %s\n", channame);
+    dprintf(DP_MODE, ":%s WHO %s\n", botname,channame);
   return;
 }
 
@@ -415,7 +415,7 @@ static void reset_chan_info(struct chanset_t *chan, int reset)
   char beI[4] = "\0";
   /* Leave the channel if we aren't supposed to be there */
   if (channel_inactive(chan)) {
-    dprintf(DP_MODE, "PART %s\n", chan->name);
+    dprintf(DP_MODE, ":%s PART %s\n", botname,chan->name);
     return;
   }
 
@@ -439,7 +439,7 @@ static void reset_chan_info(struct chanset_t *chan, int reset)
     strcat(beI, "I");
   }
   if (beI[0])
-    dprintf(DP_MODE, "MODE %s +%s\n", chan->name, beI);
+    dprintf(DP_MODE, ":%s MODE %s +%s\n", botname,chan->name, beI);
   if (reset & CHAN_RESETMODES) {
     /* done here to keep expmem happy, as this is accounted in
        irc.mod, not channels.mod where clear_channel() resides */
@@ -447,7 +447,7 @@ static void reset_chan_info(struct chanset_t *chan, int reset)
     chan->channel.key = (char *) channel_malloc (1);
     chan->channel.key[0] = 0;
     chan->status &= ~CHAN_ASKEDMODES;
-    dprintf(DP_MODE, "MODE %s\n", chan->name);
+    dprintf(DP_MODE, ":%s MODE %s\n", botname,chan->name);
   }
   if (reset & CHAN_RESETWHO) {
     chan->status |= CHAN_PEND;
@@ -455,7 +455,7 @@ static void reset_chan_info(struct chanset_t *chan, int reset)
     refresh_who_chan(chan->name);
   }
   if (reset & CHAN_RESETTOPIC)
-    dprintf(DP_MODE, "TOPIC %s\n", chan->name);
+    dprintf(DP_MODE, ":%s TOPIC %s\n", botname,chan->name);
 }
 
 /* Leave the specified channel and notify registered Tcl procs. This
@@ -465,7 +465,7 @@ static void do_channel_part(struct chanset_t *chan)
 {
   if (!channel_inactive(chan) && chan->name[0]) {
     /* Using chan->name is important here, especially for !chans <cybah> */
-    dprintf(DP_SERVER, "PART %s\n", chan->name);
+    dprintf(DP_SERVER, ":%s PART %s\n", botname,chan->name);
 
     /* As we don't know of this channel anymore when we receive the server's
      * ack for the above PART, we have to notify about it _now_. */
@@ -543,14 +543,14 @@ static void check_lonely_channel(struct chanset_t *chan)
   if (i == 1 && channel_cycle(chan) && !channel_stop_cycle(chan)) {
     if (chan->name[0] != '+') { /* Its pointless to cycle + chans for ops */
       putlog(LOG_MISC, "*", "Trying to cycle %s to regain ops.", chan->dname);
-      dprintf(DP_MODE, "PART %s\n", chan->name);
+      dprintf(DP_MODE, ":%s PART %s\n", botname,chan->name);
 
       /* If it's a !chan, we need to recreate the channel with !!chan <cybah> */
       if (chan->key_prot[0])
-        dprintf(DP_MODE, "JOIN %s%s %s\n", (chan->dname[0] == '!') ? "!" : "",
+        dprintf(DP_MODE, ":%s JOIN %s%s %s\n", botname,(chan->dname[0] == '!') ? "!" : "",
                 chan->dname, chan->key_prot);
       else
-        dprintf(DP_MODE, "JOIN %s%s\n", (chan->dname[0] == '!') ? "!" : "",
+        dprintf(DP_MODE, ":%s JOIN %s%s\n", botname,(chan->dname[0] == '!') ? "!" : "",
                 chan->dname);
       chan->status &= ~CHAN_WHINED;
     }
@@ -586,7 +586,7 @@ static void check_lonely_channel(struct chanset_t *chan)
       /* ALL bots!  make them LEAVE!!! */
       for (m = chan->channel.member; m && m->nick[0]; m = m->next)
         if (!match_my_nick(m->nick))
-          dprintf(DP_SERVER, "PRIVMSG %s :go %s\n", m->nick, chan->dname);
+          dprintf(DP_SERVER, ":%s PRIVMSG %s :go %s\n", botnick, m->nick, chan->dname);
     } else {
       /* Some humans on channel, but still op-less */
       check_tcl_need(chan->dname, "op");
@@ -675,7 +675,7 @@ static void check_expired_chanstuff()
               if ((!(glob_bot(fr) || glob_friend(fr) || (glob_op(fr) &&
                   !chan_deop(fr)) || chan_friend(fr) || chan_op(fr))) &&
                   (me_op(chan) || (me_halfop(chan) && !chan_hasop(m)))) {
-                dprintf(DP_SERVER, "KICK %s %s :idle %d min\n", chan->name,
+                dprintf(DP_SERVER, ":%s KICK %s %s :idle %d min\n", botname,chan->name,
                         m->nick, chan->idle_kick);
                 m->flags |= SENTKICK;
               }

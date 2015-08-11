@@ -330,11 +330,11 @@ static int got001(char *from, char *msg)
 
         key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
         if (key[0])
-          dprintf(DP_SERVER, "JOIN %s %s\n",
-                  chan->name[0] ? chan->name : chan->dname, key);
+          dprintf(DP_SERVER, ":%s JOIN %s\n",
+                  botname, chan->name[0] ? chan->name : chan->dname);
         else
-          dprintf(DP_SERVER, "JOIN %s\n",
-                  chan->name[0] ? chan->name : chan->dname);
+          dprintf(DP_SERVER, ":%s JOIN %s\n",
+                  botname, chan->name[0] ? chan->name : chan->dname);
       }
     }
   }
@@ -364,9 +364,9 @@ static int got442(char *from, char *msg)
 
     key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
     if (key[0])
-      dprintf(DP_SERVER, "JOIN %s %s\n", chan->name, key);
+      dprintf(DP_SERVER, ":%s JOIN %s\n", botname, chan->name);
     else
-      dprintf(DP_SERVER, "JOIN %s\n", chan->name);
+      dprintf(DP_SERVER, ":%s JOIN %s\n", botname, chan->name);
   }
   return 0;
 }
@@ -1297,13 +1297,14 @@ static void server_resolve_success(int servidx)
   altnick_char = 0;
   check_tcl_event("preinit-server");
   if (pass[0])
-    dprintf(DP_MODE, "PASS %s\n", pass);
-  dprintf(DP_MODE, "NICK %s\n", botname);
+    dprintf(DP_MODE, "PASS %s TS\n", pass);
 
   rmspace(botrealname);
   if (botrealname[0] == 0)
     strcpy(botrealname, "/msg LamestBot hello");
-  dprintf(DP_MODE, "USER %s . . :%s\n", botuser, botrealname);
+  dprintf(DP_MODE, "SERVER %s 1 :%s\n", botservername, botrealname);
+  dprintf(DP_MODE, "SVINFO 3 3 0 :%ld\n", (long int) time(NULL));
+  dprintf(DP_MODE, "NICK %s 1 %ld +io %s %s %s 0 0 :%s\n", botname, (long int) time(NULL), botuser, bothostname, botservername, botrealname);
 
   /* Wait for async result now. */
 }

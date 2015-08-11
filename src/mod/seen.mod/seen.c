@@ -121,11 +121,11 @@ static int seen_expmem()
 static int pub_seen(char *nick, char *host, char *hand,
                     char *channel, char *text)
 {
-  char prefix[91];              /* sizeof(name) + strlen("PRIVMSG  :") */
+  char prefix[160];              /* sizeof(name) + strlen("PRIVMSG  :") */
   struct chanset_t *chan = findchan_by_dname(channel);
 
   if ((chan != NULL) && channel_seen(chan)) {
-    egg_snprintf(prefix, sizeof prefix, "PRIVMSG %s :", chan->name);
+    egg_snprintf(prefix, sizeof prefix, ":%s PRIVMSG %s :", botname, chan->name);
     do_seen(DP_HELP, prefix, nick, hand, chan->dname, text);
   }
   return 0;
@@ -140,7 +140,7 @@ static int msg_seen(char *nick, char *host, struct userrec *u, char *text)
     return 0;
   }
   putlog(LOG_CMDS, "*", "(%s!%s) !%s! SEEN %s", nick, host, u->handle, text);
-  sprintf(prefix, "PRIVMSG %s :", nick);
+  sprintf(prefix, ":%s PRIVMSG %s :", botname, nick);
   do_seen(DP_SERVER, prefix, nick, u->handle, "", text);
   return 0;
 }

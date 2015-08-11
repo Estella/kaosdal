@@ -1178,7 +1178,7 @@ static char *nick_change(ClientData cdata, Tcl_Interp *irp,
       }
       strncpyz(origbotname, new, NICKLEN);
       if (server_online)
-        dprintf(DP_SERVER, "NICK %s\n", origbotname);
+        dprintf(DP_SERVER, ":%s NICK %s\n", new, origbotname);
     }
   }
   return NULL;
@@ -1280,6 +1280,38 @@ static char *traced_botname(ClientData cdata, Tcl_Interp *irp,
   if (flags & TCL_TRACE_UNSETS)
     Tcl_TraceVar(irp, name1, TCL_TRACE_READS | TCL_TRACE_WRITES |
                  TCL_TRACE_UNSETS, traced_botname, cdata);
+  if (flags & TCL_TRACE_WRITES)
+    return "read-only variable";
+  return NULL;
+}
+
+static char *traced_bothostname(ClientData cdata, Tcl_Interp *irp,
+                            EGG_CONST char *name1,
+                            EGG_CONST char *name2, int flags)
+{
+  char s[1024];
+
+  simple_sprintf(s, "%s", bothostname);
+  Tcl_SetVar2(interp, name1, name2, s, TCL_GLOBAL_ONLY);
+  if (flags & TCL_TRACE_UNSETS)
+    Tcl_TraceVar(irp, name1, TCL_TRACE_READS | TCL_TRACE_WRITES |
+                 TCL_TRACE_UNSETS, traced_bothostname, cdata);
+  if (flags & TCL_TRACE_WRITES)
+    return "read-only variable";
+  return NULL;
+}
+
+static char *traced_botservername(ClientData cdata, Tcl_Interp *irp,
+                            EGG_CONST char *name1,
+                            EGG_CONST char *name2, int flags)
+{
+  char s[1024];
+
+  simple_sprintf(s, "%s", botservername);
+  Tcl_SetVar2(interp, name1, name2, s, TCL_GLOBAL_ONLY);
+  if (flags & TCL_TRACE_UNSETS)
+    Tcl_TraceVar(irp, name1, TCL_TRACE_READS | TCL_TRACE_WRITES |
+                 TCL_TRACE_UNSETS, traced_botservername, cdata);
   if (flags & TCL_TRACE_WRITES)
     return "read-only variable";
   return NULL;
@@ -1681,7 +1713,7 @@ static void server_postrehash()
       !rfc_casecmp(oldnick, get_altbotnick())) {
     /* Change botname back, don't be premature. */
     strcpy(botname, oldnick);
-    dprintf(DP_SERVER, "NICK %s\n", origbotname);
+    dprintf(DP_SERVER, ":%s NICK %s\n", botname, origbotname);
   }
   /* Change botname back incase we were using altnick previous to rehash. */
   else if (oldnick[0])
@@ -1692,7 +1724,7 @@ static void server_die()
 {
   cycle_time = 100;
   if (server_online) {
-    dprintf(-serv, "QUIT :%s\n", quit_msg[0] ? quit_msg : "");
+    dprintf(-serv, ":%s QUIT :%s\n", botname, quit_msg[0] ? quit_msg : "");
     sleep(3);                   /* Give the server time to understand */
   }
   nuke_server(NULL);
@@ -1855,6 +1887,12 @@ static char *server_close()
   Tcl_UntraceVar(interp, "net-type",
                  TCL_TRACE_READS | TCL_TRACE_WRITES | TCL_TRACE_UNSETS,
                  traced_nettype, NULL);
+  Tcl_UntraceVar(interp, "botservername",
+                 TCL_TRACE_READS | TCL_TRACE_WRITES | TCL_TRACE_UNSETS,
+                 traced_botservername, NULL);
+  Tcl_UntraceVar(interp, "bothostname",
+                 TCL_TRACE_READS | TCL_TRACE_WRITES | TCL_TRACE_UNSETS,
+                 traced_bothostname, NULL);
   Tcl_UntraceVar(interp, "nick-len",
                  TCL_TRACE_READS | TCL_TRACE_WRITES | TCL_TRACE_UNSETS,
                  traced_nicklen, NULL);
@@ -2025,6 +2063,12 @@ char *server_start(Function *global_funcs)
   Tcl_TraceVar(interp, "net-type",
                TCL_TRACE_READS | TCL_TRACE_WRITES | TCL_TRACE_UNSETS,
                traced_nettype, NULL);
+  Tcl_TraceVar(interp, "botservername",
+               TCL_TRACE_READS | TCL_TRACE_WRITES | TCL_TRACE_UNSETS,
+               traced_botservername, NULL);
+  Tcl_TraceVar(interp, "bothostname",
+               TCL_TRACE_READS | TCL_TRACE_WRITES | TCL_TRACE_UNSETS,
+               traced_bothostname, NULL);
   Tcl_TraceVar(interp, "nick-len",
                TCL_TRACE_READS | TCL_TRACE_WRITES | TCL_TRACE_UNSETS,
                traced_nicklen, NULL);

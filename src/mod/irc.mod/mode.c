@@ -190,9 +190,9 @@ static void flush_mode(struct chanset_t *chan, int pri)
   }
   if (out[0]) {
     if (pri == QUICK)
-      dprintf(DP_MODE, "MODE %s %s\n", chan->name, out);
+      dprintf(DP_MODE, ":%s MODE %s %s\n", botname,chan->name, out);
     else
-      dprintf(DP_SERVER, "MODE %s %s\n", chan->name, out);
+      dprintf(DP_SERVER, ":%s MODE %s %s\n", botname,chan->name, out);
   }
 }
 
@@ -1020,7 +1020,7 @@ static int gotmode(char *from, char *origmsg)
     chan = findchan(ch);
     if (!chan) {
       putlog(LOG_MISC, "*", CHAN_FORCEJOIN, ch);
-      dprintf(DP_SERVER, "PART %s\n", ch);
+      dprintf(DP_SERVER, ":%s PART %s\n", botname,ch);
     } else if (channel_active(chan) || channel_pending(chan)) {
       z = strlen(msg);
       if (msg[--z] == ' ')      /* I hate cosmetic bugs :P -poptix */
@@ -1039,13 +1039,13 @@ static int gotmode(char *from, char *origmsg)
           !chan_deop(user))))) && !match_my_nick(nick)) {
         if (chan_fakeop(m) || chan_fakehalfop(m)) {
           putlog(LOG_MODES, ch, CHAN_FAKEMODE, ch);
-          dprintf(DP_MODE, "KICK %s %s :%s\n", ch, nick, CHAN_FAKEMODE_KICK);
+          dprintf(DP_MODE, ":%s KICK %s %s :%s\n", botname,ch, nick, CHAN_FAKEMODE_KICK);
           m->flags |= SENTKICK;
           reversing = 1;
         } else if (!chan_hasop(m) && !chan_hashalfop(m) &&
                  !channel_nodesynch(chan)) {
           putlog(LOG_MODES, ch, CHAN_DESYNCMODE, ch);
-          dprintf(DP_MODE, "KICK %s %s :%s\n", ch, nick, CHAN_DESYNCMODE_KICK);
+          dprintf(DP_MODE, ":%s KICK %s %s :%s\n", botname,ch, nick, CHAN_DESYNCMODE_KICK);
           m->flags |= SENTKICK;
           reversing = 1;
         }

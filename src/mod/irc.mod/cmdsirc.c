@@ -110,7 +110,7 @@ static void cmd_act(struct userrec *u, int idx, char *par)
     return;
   }
   putlog(LOG_CMDS, "*", "#%s# (%s) act %s", dcc[idx].nick, chan->dname, par);
-  dprintf(DP_HELP, "PRIVMSG %s :\001ACTION %s\001\n", chan->name, par);
+  dprintf(DP_HELP, ":%s PRIVMSG %s :\001ACTION %s\001\n", botnick, chan->name, par);
   dprintf(idx, "Action to %s: %s\n", chan->dname, par);
 }
 
@@ -123,7 +123,7 @@ static void cmd_msg(struct userrec *u, int idx, char *par)
     dprintf(idx, "Usage: msg <nick> <message>\n");
   else {
     putlog(LOG_CMDS, "*", "#%s# msg %s %s", dcc[idx].nick, nick, par);
-    dprintf(DP_HELP, "PRIVMSG %s :%s\n", nick, par);
+    dprintf(DP_HELP, ":%s PRIVMSG %s :%s\n", botnick, nick, par);
     dprintf(idx, "Msg to %s: %s\n", nick, par);
   }
 }
@@ -156,7 +156,7 @@ static void cmd_say(struct userrec *u, int idx, char *par)
     return;
   }
   putlog(LOG_CMDS, "*", "#%s# (%s) say %s", dcc[idx].nick, chan->dname, par);
-  dprintf(DP_HELP, "PRIVMSG %s :%s\n", chan->name, par);
+  dprintf(DP_HELP, ":%s PRIVMSG %s :%s\n", botnick, chan->name, par);
   dprintf(idx, "Said to %s: %s\n", chan->dname, par);
 }
 
@@ -256,7 +256,7 @@ static void cmd_kickban(struct userrec *u, int idx, char *par)
     do_mask(chan, chan->channel.ban, s1, 'b');
   if (!par[0])
     par = "requested";
-  dprintf(DP_SERVER, "KICK %s %s :%s\n", chan->name, m->nick, par);
+  dprintf(DP_SERVER, ":%s KICK %s %s :%s\n", botname,chan->name, m->nick, par);
   m->flags |= SENTKICK;
   u_addban(chan, s1, dcc[idx].nick, par, now + (60 * chan->ban_time), 0);
   dprintf(idx, "Okay, done.\n");
@@ -682,7 +682,7 @@ static void cmd_kick(struct userrec *u, int idx, char *par)
     dprintf(idx, "%s is another channel bot!\n", nick);
     return;
   }
-  dprintf(DP_SERVER, "KICK %s %s :%s\n", chan->name, m->nick, par);
+  dprintf(DP_SERVER, ":%s KICK %s %s :%s\n", botname,chan->name, m->nick, par);
   m->flags |= SENTKICK;
   dprintf(idx, "Okay, done.\n");
 }
@@ -718,7 +718,7 @@ static void cmd_invite(struct userrec *u, int idx, char *par)
     dprintf(idx, "%s is already on %s!\n", nick, chan->dname);
     return;
   }
-  dprintf(DP_SERVER, "INVITE %s %s\n", nick, chan->name);
+  dprintf(DP_SERVER, ":%s INVITE %s %s\n", botname,nick, chan->name);
   dprintf(idx, "Inviting %s to %s.\n", nick, chan->dname);
 }
 
@@ -923,7 +923,7 @@ static void cmd_topic(struct userrec *u, int idx, char *par)
     dprintf(idx, "I'm not a channel op or halfop on %s and the channel is "
             "+t.\n", chan->dname);
   else {
-    dprintf(DP_SERVER, "TOPIC %s :%s\n", chan->name, par);
+    dprintf(DP_SERVER, ":%s TOPIC %s :%s\n", botname,chan->name, par);
     dprintf(idx, "Changing topic...\n");
     putlog(LOG_CMDS, "*", "#%s# (%s) topic %s", dcc[idx].nick,
            chan->dname, par);

@@ -1056,7 +1056,7 @@ static int raw_dcc_resend_send(char *filename, char *nick, char *from,
     char s[INET_ADDRSTRLEN];
 #endif
     if (getdccaddr(&dcc[i].sockname, s, sizeof s)) {
-      dprintf(DP_SERVER, "PRIVMSG %s :\001DCC %sSEND %s %s %d %lu\001\n", nick,
+      dprintf(DP_SERVER, ":%s PRIVMSG %s :\001DCC %sSEND %s %s %d %lu\001\n", botname, nick,
               resend ? "RE" : "", nfn, s, port, dccfilesize);
       putlog(LOG_FILES, "*", TRANSFER_BEGIN_DCC, resend ? TRANSFER_RE : "", nfn,
              nick);
@@ -1120,7 +1120,7 @@ static int ctcp_DCC_RESUME(char *nick, char *from, char *handle,
 
   dcc[i].u.xfer->type = XFER_RESUME_PEND;
   dcc[i].u.xfer->offset = offset;
-  dprintf(DP_SERVER, "PRIVMSG %s :\001DCC ACCEPT %s %d %u\001\n", nick, fn, port,
+  dprintf(DP_SERVER, ":%s PRIVMSG %s :\001DCC ACCEPT %s %d %u\001\n", botname, nick, fn, port,
           offset);
   return 1; /* Now we wait for the client to connect. */
 }

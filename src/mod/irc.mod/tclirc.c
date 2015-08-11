@@ -985,14 +985,14 @@ static int tcl_putkick STDVAR
     /* Check if we should send the kick command yet */
     l = strlen(chan->name) + strlen(kicknick) + strlen(comment);
     if (((kick_method != 0) && (k == kick_method)) || (l > 480)) {
-      dprintf(DP_SERVER, "KICK %s %s :%s\n", chan->name, kicknick, comment);
+      dprintf(DP_SERVER, ":%s KICK %s %s :%s\n", botname,chan->name, kicknick, comment);
       k = 0;
       kicknick[0] = 0;
     }
   }
   /* Clear out all pending kicks in our local kick queue */
   if (k > 0)
-    dprintf(DP_SERVER, "KICK %s %s :%s\n", chan->name, kicknick, comment);
+    dprintf(DP_SERVER, ":%s KICK %s %s :%s\n", botname,chan->name, kicknick, comment);
   return TCL_OK;
 }
 
