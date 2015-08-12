@@ -506,6 +506,8 @@
 /* 300 - 303 */
 #define tcl_resultint ((int (*)(void))global[300])
 #define tcl_resultstring ((const char *(*)(void))global[301])
+#define bothostname ((char *)(global[302]))
+#define botservername ((char *)(global[303]))
 
 /* hostmasking */
 #define maskhost(a,b) maskaddr((a),(b),3)

@@ -1145,11 +1145,12 @@ static int got315(char *from, char *msg)
 
     key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
     if (key[0])
-      dprintf(DP_SERVER, "JOIN %s %s\n",
-              chan->name[0] ? chan->name : chan->dname, key);
-    else
-      dprintf(DP_SERVER, "JOIN %s\n",
+      dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
               chan->name[0] ? chan->name : chan->dname);
+    else
+      dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
+              chan->name[0] ? chan->name : chan->dname);
+    reset_chan_info(chan, CHAN_RESETALL);
   } else if (me_op(chan))
     recheck_channel(chan, 1);
   else if (chan->channel.members == 1)
@@ -1335,6 +1336,9 @@ static int got403(char *from, char *msg)
              "Unique channel %s does not exist... Attempting to join with "
              "short name.", chname);
       dprintf(DP_SERVER, ":%s JOIN %s\n", botname,chan->dname);
+      dprintf(DP_SERVER, ":%s MODE %s +o %s\n", botname,chan->dname, botname);
+      dprintf(DP_SERVER, ":%s WHO %s\n", botname,chan->dname);
+      reset_chan_info(chan, CHAN_RESETALL);
     } else {
       /* We have found the channel, so the server has given us the short
        * name. Prefix another '!' to it, and attempt the join again...
@@ -1479,10 +1483,10 @@ static int got475(char *from, char *msg)
       chan->channel.key = (char *) channel_malloc(1);
       chan->channel.key[0] = 0;
 
-      if (chan->key_prot[0])
-        dprintf(DP_SERVER, ":%s JOIN %s %s\n", botname,chan->dname, chan->key_prot);
-      else
-        dprintf(DP_SERVER, ":%s JOIN %s\n", botname,chan->dname);
+      dprintf(DP_SERVER, ":%s JOIN %s\n", botname,chan->dname);
+      dprintf(DP_SERVER, ":%s MODE %s +o %s\n", botname,chan->dname,botname);
+      dprintf(DP_SERVER, ":%s WHO %s\n", botname,chan->dname);
+      reset_chan_info(chan, CHAN_RESETALL);
     } else {
       check_tcl_need(chan->dname, "key");
 
@@ -1525,12 +1529,11 @@ static int gotinvite(char *from, char *msg)
   else if (chan && !channel_inactive(chan)) {
 
     key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
-    if (key[0])
-      dprintf(DP_SERVER, "JOIN %s %s\n",
-              chan->name[0] ? chan->name : chan->dname, key);
-    else
-      dprintf(DP_SERVER, "JOIN %s\n",
-              chan->name[0] ? chan->name : chan->dname);
+    dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
+            chan->name[0] ? chan->name : chan->dname);
+    dprintf(DP_SERVER, ":%s WHO %s\n", botname,
+            chan->name[0] ? chan->name : chan->dname);
+    reset_chan_info(chan, CHAN_RESETALL);
   }
   return 0;
 }
@@ -1665,6 +1668,7 @@ static void set_delay(struct chanset_t *chan, char *nick)
   m->delay = a_delay;
 }
 
+
 /* Got a join
  */
 static int gotjoin(char *from, char *chname)
@@ -1753,6 +1757,7 @@ static int gotjoin(char *from, char *chname)
              chan->dname);
       chan->status |= CHAN_ACTIVE;
       chan->status &= ~CHAN_PEND;
+      strncpy(chan->name, chan->dname, 81);
       reset_chan_info(chan, CHAN_RESETALL);
     } else {
       m = ismember(chan, nick);
@@ -1959,6 +1964,14 @@ exit:
   return 0;
 }
 
+static int gotsjoin(char *from, char *data)
+{
+	char *ts = newsplit(&data);
+	char *chname = newsplit(&data);
+	if (strcspn(from, ".") != strlen(from)) return 0; // Got s2s SJOIN that isn't cli-style
+	return gotjoin(from, chname);
+}
+
 /* Got a part
  */
 static int gotpart(char *from, char *msg)
@@ -2012,11 +2025,12 @@ static int gotpart(char *from, char *msg)
 
         key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
         if (key[0])
-          dprintf(DP_SERVER, "JOIN %s %s\n",
-                  chan->name[0] ? chan->name : chan->dname, key);
-        else
-          dprintf(DP_SERVER, "JOIN %s\n",
+          dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
                   chan->name[0] ? chan->name : chan->dname);
+        else
+          dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
+                  chan->name[0] ? chan->name : chan->dname);
+        reset_chan_info(chan, CHAN_RESETALL);
       }
     } else
       check_lonely_channel(chan);
@@ -2049,12 +2063,15 @@ static int gotkick(char *from, char *origmsg)
 
     key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
     if (key[0])
-      dprintf(DP_SERVER, "JOIN %s %s\n",
-              chan->name[0] ? chan->name : chan->dname, key);
-    else
-      dprintf(DP_SERVER, "JOIN %s\n",
+      dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
               chan->name[0] ? chan->name : chan->dname);
+    else
+      dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
+              chan->name[0] ? chan->name : chan->dname);
+    dprintf(DP_SERVER, ":%s MODE %s +o %s\n", botname,
+            chan->name[0] ? chan->name : chan->dname, botname);
     clear_channel(chan, 1);
+    reset_chan_info(chan, CHAN_RESETALL);
     return 0;                   /* rejoin if kicked before getting needed info <Wcc[08/08/02]> */
   }
   if (channel_active(chan)) {
@@ -2097,11 +2114,16 @@ static int gotkick(char *from, char *origmsg)
 
       key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
       if (key[0])
-        dprintf(DP_SERVER, "JOIN %s %s\n",
-                chan->name[0] ? chan->name : chan->dname, key);
-      else
-        dprintf(DP_SERVER, "JOIN %s\n",
+        dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
                 chan->name[0] ? chan->name : chan->dname);
+      else
+        dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
+                chan->name[0] ? chan->name : chan->dname);
+        dprintf(DP_SERVER, ":%s WHO %s\n", botname,
+                chan->name[0] ? chan->name : chan->dname);
+      dprintf(DP_SERVER, ":%s MODE %s +o %s\n", botname,
+              chan->name[0] ? chan->name : chan->dname, botname);
+      reset_chan_info(chan, CHAN_RESETALL);
       clear_channel(chan, 1);
     } else {
       killmember(chan, nick);
@@ -2319,7 +2341,7 @@ static int gotmsg(char *from, char *msg)
       ctcp = buf2;
       strcpy(ctcp, p1);
       strcpy(p1 - 1, p + 1);
-      detect_chan_flood(nick, uhost, from, chan, strncmp(ctcp, ":%s ACTION ", botname,7) ?
+      detect_chan_flood(nick, uhost, from, chan, strncmp(ctcp, "ACTION ", 7) ?
                         FLOOD_CTCP : FLOOD_PRIVMSG, NULL);
 
       chan = findchan(realto);
@@ -2440,7 +2462,7 @@ static int gotnotice(char *from, char *msg)
       strcpy(p1 - 1, p + 1);
       p = strchr(msg, 1);
       detect_chan_flood(nick, uhost, from, chan,
-                        strncmp(ctcp, ":%s ACTION ", botname,7) ?
+                        strncmp(ctcp, "ACTION ", 7) ?
                         FLOOD_CTCP : FLOOD_PRIVMSG, NULL);
 
       chan = findchan(realto);
@@ -2504,7 +2526,9 @@ static cmd_t irc_raw[] = {
   {"TOPIC",   "",   (IntFunc) gottopic,   "irc:topic"},
   {"331",     "",   (IntFunc) got331,       "irc:331"},
   {"332",     "",   (IntFunc) got332,       "irc:332"},
+  {"332",     "",   (IntFunc) got332,       "irc:332"},
   {"JOIN",    "",   (IntFunc) gotjoin,     "irc:join"},
+  {"SJOIN",   "",   (IntFunc) gotsjoin,   "irc:sjoin"},
   {"PART",    "",   (IntFunc) gotpart,     "irc:part"},
   {"KICK",    "",   (IntFunc) gotkick,     "irc:kick"},
   {"NICK",    "",   (IntFunc) gotnick,     "irc:nick"},

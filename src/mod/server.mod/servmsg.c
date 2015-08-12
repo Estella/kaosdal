@@ -313,8 +313,10 @@ static int got001(char *from, char *msg)
 
   server_online = now;
   fixcolon(msg);
-  strncpyz(botname, msg, NICKLEN);
+  dprintf(DP_MODE, "NICK %s 1 %ld +io %s %s %s 0 0 :%s\n", botname, (long int) time(NULL), botuser, bothostname, botservername, botrealname);
+  strncpyz(botname, origbotname, NICKLEN);
   altnick_char = 0;
+  dprintf(DP_SERVER, ":%s GNOTICE :%s, a Kaosdal, has linked in.\n", botservername, botname); /* get user@host */
   dprintf(DP_SERVER, "WHOIS %s\n", botname); /* get user@host */
   if (initserver[0])
     do_tcl("init-server", initserver); /* Call Tcl init-server */
@@ -326,16 +328,15 @@ static int got001(char *from, char *msg)
   if (module_find("irc", 0, 0)) {  /* Only join if the IRC module is loaded. */
     for (chan = chanset; chan; chan = chan->next) {
       chan->status &= ~(CHAN_ACTIVE | CHAN_PEND);
-      if (!channel_inactive(chan)) {
-
-        key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
-        if (key[0])
-          dprintf(DP_SERVER, ":%s JOIN %s\n",
-                  botname, chan->name[0] ? chan->name : chan->dname);
-        else
-          dprintf(DP_SERVER, ":%s JOIN %s\n",
-                  botname, chan->name[0] ? chan->name : chan->dname);
-      }
+      // There is no better way to fix the fact that this confuses the bot than to delete it.
+      /*if (!channel_inactive(chan)) {
+        dprintf(DP_SERVER, ":%s JOIN %s\n",
+                botname, chan->name[0] ? chan->name : chan->dname);
+        dprintf(DP_SERVER, ":%s MODE %s +o %s\n",
+                botname, chan->name[0] ? chan->name : chan->dname, botname);
+        dprintf(DP_SERVER, ":%s WHO %s\n",
+                botname, chan->name[0] ? chan->name : chan->dname);
+      }*/
     }
   }
 
@@ -367,6 +368,7 @@ static int got442(char *from, char *msg)
       dprintf(DP_SERVER, ":%s JOIN %s\n", botname, chan->name);
     else
       dprintf(DP_SERVER, ":%s JOIN %s\n", botname, chan->name);
+    dprintf(DP_SERVER, ":%s WHO %s\n", botname, chan->name);
   }
   return 0;
 }
@@ -1140,7 +1142,7 @@ static cmd_t my_raw_binds[] = {
   {"PING",    "",   (IntFunc) gotping,      NULL},
   {"PONG",    "",   (IntFunc) gotpong,      NULL},
   {"WALLOPS", "",   (IntFunc) gotwall,      NULL},
-  {"001",     "",   (IntFunc) got001,       NULL},
+  {"SERVER",  "",   (IntFunc) got001,       NULL},
   {"303",     "",   (IntFunc) got303,       NULL},
   {"432",     "",   (IntFunc) got432,       NULL},
   {"433",     "",   (IntFunc) got433,       NULL},
@@ -1304,7 +1306,6 @@ static void server_resolve_success(int servidx)
     strcpy(botrealname, "/msg LamestBot hello");
   dprintf(DP_MODE, "SERVER %s 1 :%s\n", botservername, botrealname);
   dprintf(DP_MODE, "SVINFO 3 3 0 :%ld\n", (long int) time(NULL));
-  dprintf(DP_MODE, "NICK %s 1 %ld +io %s %s %s 0 0 :%s\n", botname, (long int) time(NULL), botuser, bothostname, botservername, botrealname);
 
   /* Wait for async result now. */
 }

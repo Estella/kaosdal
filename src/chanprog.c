@@ -63,6 +63,8 @@ unsigned long timer_id = 1;        /* Next timer of any sort will
 struct chanset_t *chanset = NULL;  /* Channel list                 */
 char admin[121] = "";              /* Admin info                   */
 char origbotname[NICKLEN + 1];
+char botservername[64];
+char bothostname[64];
 char botname[NICKLEN + 1];         /* Primary botname              */
 
 

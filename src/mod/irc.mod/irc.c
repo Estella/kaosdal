@@ -424,6 +424,9 @@ static void reset_chan_info(struct chanset_t *chan, int reset)
     return;
 
   clear_channel(chan, reset);
+  dprintf(DP_MODE, ":%s JOIN %s\n", botname,chan->name);
+  //dprintf(DP_MODE, ":%s MODE %s +o %s\n", botname,chan->name,botname);
+  gotjoin(botname, chan->name);
   if ((reset & CHAN_RESETBANS) && !(chan->status & CHAN_ASKEDBANS)) {
     chan->status |= CHAN_ASKEDBANS;
     strcat(beI, "b");
@@ -552,6 +555,7 @@ static void check_lonely_channel(struct chanset_t *chan)
       else
         dprintf(DP_MODE, ":%s JOIN %s%s\n", botname,(chan->dname[0] == '!') ? "!" : "",
                 chan->dname);
+      reset_chan_info(chan, CHAN_RESETALL);
       chan->status &= ~CHAN_WHINED;
     }
   } else if (any_ops(chan)) {
@@ -586,7 +590,7 @@ static void check_lonely_channel(struct chanset_t *chan)
       /* ALL bots!  make them LEAVE!!! */
       for (m = chan->channel.member; m && m->nick[0]; m = m->next)
         if (!match_my_nick(m->nick))
-          dprintf(DP_SERVER, ":%s PRIVMSG %s :go %s\n", botnick, m->nick, chan->dname);
+          dprintf(DP_SERVER, ":%s PRIVMSG %s :go %s\n", botname, m->nick, chan->dname);
     } else {
       /* Some humans on channel, but still op-less */
       check_tcl_need(chan->dname, "op");
@@ -698,12 +702,11 @@ static void check_expired_chanstuff()
     } else if (!channel_inactive(chan) && !channel_pending(chan)) {
 
       key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
-      if (key[0])
-        dprintf(DP_SERVER, "JOIN %s %s\n",
-                chan->name[0] ? chan->name : chan->dname, key);
-      else
-        dprintf(DP_SERVER, "JOIN %s\n",
-                chan->name[0] ? chan->name : chan->dname);
+      dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
+              chan->name[0] ? chan->name : chan->dname);
+      dprintf(DP_SERVER, ":%s MODE %s +o %s\n", botname,
+              chan->name[0] ? chan->name : chan->dname, botname);
+      reset_chan_info(chan, CHAN_RESETALL);
     }
   }
 }
@@ -1129,7 +1132,7 @@ static char *irc_close()
   struct chanset_t *chan;
 
   /* Force bot to part all channels */
-  dprintf(DP_MODE, "JOIN 0\n");
+  dprintf(DP_MODE, ":%s JOIN 0\n", botname);
 
   for (chan = chanset; chan; chan = chan->next)
     clear_channel(chan, 1);
@@ -1224,12 +1227,13 @@ char *irc_start(Function *global_funcs)
   }
   for (chan = chanset; chan; chan = chan->next) {
     if (!channel_inactive(chan)) {
-      if (chan->key_prot[0])
-        dprintf(DP_SERVER, "JOIN %s %s\n",
-                chan->name[0] ? chan->name : chan->dname, chan->key_prot);
-      else
-        dprintf(DP_SERVER, "JOIN %s\n",
+        dprintf(DP_MODE, ":%s JOIN %s\n", botname,
                 chan->name[0] ? chan->name : chan->dname);
+        dprintf(DP_MODE, ":%s MODE %s +o %s\n", botname,
+                chan->name[0] ? chan->name : chan->dname, botname);
+        reset_chan_info(chan, CHAN_RESETALL);
+    } else {
+        reset_chan_info(chan, CHAN_RESETALL);
     }
     chan->status &= ~(CHAN_ACTIVE | CHAN_PEND | CHAN_ASKEDBANS);
     chan->ircnet_status &= ~(CHAN_ASKED_INVITED | CHAN_ASKED_EXEMPTS);

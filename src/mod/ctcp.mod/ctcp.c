@@ -175,10 +175,10 @@ static int ctcp_CHAT(char *nick, char *uhost, char *handle, char *object,
          * -poptix 5/1/1997 */
 #ifdef TLS
 	  dprintf(DP_SERVER, ":%s PRIVMSG %s :\001DCC %sCHAT chat %s %u\001\n",
-		  botnick, nick, (ssl ? "S" : ""), s, dcc[i].port);
+		  botname, nick, (ssl ? "S" : ""), s, dcc[i].port);
 #else
           dprintf(DP_SERVER, ":%s PRIVMSG %s :\001DCC CHAT chat %s %u\001\n",
-                  botnick, nick, s, dcc[i].port);
+                  botname, nick, s, dcc[i].port);
 #endif
         return 1;
       }

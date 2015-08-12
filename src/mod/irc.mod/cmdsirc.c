@@ -110,7 +110,7 @@ static void cmd_act(struct userrec *u, int idx, char *par)
     return;
   }
   putlog(LOG_CMDS, "*", "#%s# (%s) act %s", dcc[idx].nick, chan->dname, par);
-  dprintf(DP_HELP, ":%s PRIVMSG %s :\001ACTION %s\001\n", botnick, chan->name, par);
+  dprintf(DP_HELP, ":%s PRIVMSG %s :\001ACTION %s\001\n", botname, chan->name, par);
   dprintf(idx, "Action to %s: %s\n", chan->dname, par);
 }
 
@@ -123,7 +123,7 @@ static void cmd_msg(struct userrec *u, int idx, char *par)
     dprintf(idx, "Usage: msg <nick> <message>\n");
   else {
     putlog(LOG_CMDS, "*", "#%s# msg %s %s", dcc[idx].nick, nick, par);
-    dprintf(DP_HELP, ":%s PRIVMSG %s :%s\n", botnick, nick, par);
+    dprintf(DP_HELP, ":%s PRIVMSG %s :%s\n", botname, nick, par);
     dprintf(idx, "Msg to %s: %s\n", nick, par);
   }
 }
@@ -156,7 +156,7 @@ static void cmd_say(struct userrec *u, int idx, char *par)
     return;
   }
   putlog(LOG_CMDS, "*", "#%s# (%s) say %s", dcc[idx].nick, chan->dname, par);
-  dprintf(DP_HELP, ":%s PRIVMSG %s :%s\n", botnick, chan->name, par);
+  dprintf(DP_HELP, ":%s PRIVMSG %s :%s\n", botname, chan->name, par);
   dprintf(idx, "Said to %s: %s\n", chan->dname, par);
 }
 

@@ -72,7 +72,7 @@
 #  define _POSIX_SOURCE 1               /* Solaris needs this */
 #endif
 
-extern char origbotname[], userfile[], botnetnick[];
+extern char botservername[], bothostname[], origbotname[], userfile[], botnetnick[];
 extern int dcc_total, conmask, cache_hit, cache_miss, max_logs, quick_logs,
            quiet_save;
 extern struct dcc_t *dcc;

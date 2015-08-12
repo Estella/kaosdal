@@ -86,7 +86,7 @@ extern struct chanset_t *chanset;
 
 extern char tempdir[], botnetnick[], botname[], origbotname[], botuser[],
             admin[], userfile[], ver[], notify_new[], helpdir[], version[],
-                        quit_msg[], log_ts[];
+                        quit_msg[], log_ts[], botservername[], bothostname[];
 
 extern int parties, noshare, dcc_total, egg_numver, userfile_perm, do_restart,
            ignore_time, must_be_owner, raw_log, max_dcc, make_userfile,
@@ -609,7 +609,9 @@ Function global_table[] = {
   (Function) tcl_resultempty,
   /* 300 - 304 */
   (Function) tcl_resultint,
-  (Function) tcl_resultstring
+  (Function) tcl_resultstring,
+  (Function) bothostname,
+  (Function) botservername
 };
 
 void init_modules(void)

@@ -1618,12 +1618,12 @@ static int tcl_channel_modify(Tcl_Interp *irp, struct chanset_t *chan,
         char *key;
 
         key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
-        if (key[0])
-          dprintf(DP_SERVER, "JOIN %s %s\n",
-                  chan->name[0] ? chan->name : chan->dname, key);
-        else
-          dprintf(DP_SERVER, "JOIN %s\n",
-                  chan->name[0] ? chan->name : chan->dname);
+        dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
+                chan->name[0] ? chan->name : chan->dname);
+        dprintf(DP_SERVER, ":%s MODE %s +o %s\n", botname,
+                chan->name[0] ? chan->name : chan->dname, botname);
+        dprintf(DP_SERVER, ":%s WHO %s\n", botname,
+                chan->name[0] ? chan->name : chan->dname);
       }
     }
     if ((old_status ^ chan->status) & (CHAN_ENFORCEBANS | CHAN_OPONJOIN |
@@ -2096,10 +2096,9 @@ static int tcl_channel_add(Tcl_Interp *irp, char *newname, char *options)
   }
   Tcl_Free((char *) item);
   if (join && !channel_inactive(chan) && module_find("irc", 0, 0)) {
-    if (chan->key_prot[0])
-      dprintf(DP_SERVER, "JOIN %s %s\n", chan->dname, chan->key_prot);
-    else
-      dprintf(DP_SERVER, "JOIN %s\n", chan->dname);
+    dprintf(DP_SERVER, ":%s JOIN %s\n", botname, chan->dname);
+    dprintf(DP_SERVER, ":%s MODE %s +o %s\n", botname, chan->dname, botname);
+    dprintf(DP_SERVER, ":%s WHO %s\n", botname, chan->dname);
   }
   return ret;
 }

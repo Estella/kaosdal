@@ -1,0 +1,11 @@
+*.o
+*.so
+run/
+Makefile
+eggdrop
+config.*
+lush.h
+EGGMOD.stamp
+.modules
+.known_modules
+mod.xlibs

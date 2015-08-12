@@ -1001,7 +1001,7 @@ static void got_uninvite(struct chanset_t *chan, char *nick, char *from,
 
 static int gotmode(char *from, char *origmsg)
 {
-  char *nick, *ch, *op, *chg, *msg;
+  char *nick, *ch, *op, *chg, *msg, *discard;
   char s[UHOSTLEN], buf[511];
   char ms2[3];
   int z;
@@ -1015,6 +1015,7 @@ static int gotmode(char *from, char *origmsg)
   /* Usermode changes? */
   if (msg[0] && (strchr(CHANMETA, msg[0]) != NULL)) {
     ch = newsplit(&msg);
+    discard = newsplit(&msg);
     chg = newsplit(&msg);
     reversing = 0;
     chan = findchan(ch);

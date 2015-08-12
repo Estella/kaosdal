@@ -49,7 +49,7 @@ extern char origbotname[], botuser[], motdfile[], admin[], userfile[],
             firewall[], helpdir[], notify_new[], vhost[], moddir[],
             tempdir[], owner[], network[], botnetnick[], bannerfile[],
             egg_version[], natip[], configfile[], logfile_suffix[], log_ts[],
-            textdir[], pid_file[], listen_ip[];
+            textdir[], pid_file[], listen_ip[], bothostname[], botservername[];
 
 
 extern int flood_telnet_thr, flood_telnet_time, shtime, share_greet,
@@ -398,6 +398,8 @@ static tcl_strings def_tcl_strings[] = {
   {"whois-fields",    whois_fields,   1024,                    0},
   {"nat-ip",          natip,          120,                     0},
   {"username",        botuser,        10,                      0},
+  {"servername",      botservername,        63,                      0},
+  {"hostname",        bothostname,        63,                      0},
   {"version",         egg_version,    0,                       0},
   {"firewall",        firewall,       120,                     0},
   {"config",          configfile,     0,                       0},
