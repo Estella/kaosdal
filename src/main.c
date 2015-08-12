@@ -31,7 +31,10 @@
  * list available at eggheads@eggheads.org.
  */
 
+#include "uthash.h"
 #include "main.h"
+
+struct hobyni *hostbynick = NULL;
 
 #include <fcntl.h>
 #include <errno.h>

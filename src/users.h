@@ -164,6 +164,13 @@ struct userrec {
   struct user_entry *entries;
 };
 
+struct hostmasks {
+  struct hostmasks *next;
+  char nick[NICKMAX];
+  char ident[NICKMAX];
+  char host[293];
+};
+
 struct igrec {
   struct igrec *next;
   char *igmask;
@@ -185,8 +192,11 @@ struct userrec *adduser();
 struct userrec *get_user_by_handle(struct userrec *, char *);
 struct userrec *get_user_by_host(char *);
 struct userrec *get_user_by_nick(char *);
+char *get_host_by_nick(char *);
 struct userrec *check_chanlist();
 struct userrec *check_chanlist_hand();
+
+struct hostmasks *get_hostmask_by_nick(char *);
 
 /* All the default userentry stuff, for code re-use
  */

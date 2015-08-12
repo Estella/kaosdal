@@ -303,13 +303,6 @@ typedef int socklen_t;
 #  define Assert(expr) do {} while (0)
 #endif
 
-#ifndef COMPILING_MEM
-#  undef malloc
-#  define malloc(x) dont_use_old_malloc(x)
-#  undef free
-#  define free(x)   dont_use_old_free(x)
-#endif /* !COMPILING_MEM */
-
 /* 32 bit type */
 #if (SIZEOF_INT == 4)
 typedef unsigned int u_32bit_t;

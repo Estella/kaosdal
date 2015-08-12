@@ -15,12 +15,12 @@ static: ../irc.o
 modules: ../../../irc.$(MOD_EXT)
 
 ../irc.o:
-	$(CC) $(CFLAGS) $(CPPFLAGS) -DMAKING_MODS -c $(srcdir)/irc.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -DMAKING_MODS -c $(srcdir)/irc.c 
 	@rm -f ../irc.o
 	mv irc.o ../
 
 ../../../irc.$(MOD_EXT): ../irc.o
-	$(LD) -o ../../../irc.$(MOD_EXT) ../irc.o $(XLIBS) $(MODULE_XLIBS)
+	$(LD) -o ../../../irc.$(MOD_EXT) ../irc.o $(XLIBS) $(MODULE_XLIBS) ../../hash.o
 	$(STRIP) ../../../irc.$(MOD_EXT)
 
 depend:
@@ -45,4 +45,4 @@ distclean: clean
   ../../../src/mod/server.mod/server.h \
   ../../../src/mod/channels.mod/channels.h .././irc.mod/chan.c \
   .././irc.mod/mode.c .././irc.mod/cmdsirc.c .././irc.mod/msgcmds.c \
-  .././irc.mod/tclirc.c
+  .././irc.mod/tclirc.c ../../../src/hash.c

@@ -2137,13 +2137,24 @@ static int gotkick(char *from, char *origmsg)
  */
 static int gotnick(char *from, char *msg)
 {
-  char *nick, *chname, s1[UHOSTLEN], buf[UHOSTLEN], *uhost = buf;
+  char *nick, *chname, s1[UHOSTLEN], buf[UHOSTLEN], *uhost = buf, *n, *id, *h, *discard;
   unsigned char found = 0;
   memberlist *m, *mm;
   struct chanset_t *chan, *oldchan = NULL;
   struct userrec *u;
   struct flag_record fr = { FR_GLOBAL | FR_CHAN, 0, 0, 0, 0, 0 };
-
+  if (from[0] == 0) {
+    // New nick, handle
+    n = newsplit(&msg);
+    discard = newsplit(&msg);
+    discard = newsplit(&msg);
+    discard = newsplit(&msg);
+    id = newsplit(&msg);
+    h = newsplit(&msg);
+    discard = newsplit(&msg);
+    add_nick(n, id, h);
+    return 0;
+  }
   strcpy(uhost, from);
   nick = splitnick(&uhost);
   fixcolon(msg);
@@ -2228,8 +2239,10 @@ static int gotquit(char *from, char *msg)
   struct userrec *u;
 
   strcpy(from2, from);
+  strcat(from2, "!");
+  strcat(from2, find_host_by_nick(from));
   u = get_user_by_host(from2);
-  nick = splitnick(&from);
+  nick = from;
   fixcolon(msg);
   /* Fred1: Instead of expensive wild_match on signoff, quicker method.
    *        Determine if signoff string matches "%.% %.%", and only one
@@ -2307,10 +2320,15 @@ static int gotquit(char *from, char *msg)
 static int gotmsg(char *from, char *msg)
 {
   char *to, *realto, buf[UHOSTLEN], *nick, buf2[512], *uhost = buf, *p, *p1,
-       *code, *ctcp;
+       *code, *ctcp, *ofrom=buf2;
   int ctcp_count = 0, ignoring;
   struct chanset_t *chan;
   struct userrec *u;
+  if (!strchr(from, '.')) {
+  ofrom = strdup(from);
+  strcat(from, "!");
+  strcat(from, find_host_by_nick(ofrom));
+  }
 
   /* Only handle if message is to a channel, or to @#channel. */
   /* FIXME: Properly handle ovNotices (@+#channel), vNotices (+#channel), etc. */

@@ -148,4 +148,20 @@ extern struct dcc_table DCC_CHAT, DCC_BOT, DCC_LOST, DCC_SCRIPT, DCC_BOT_NEW,
 #  define O_NONBLOCK 00000004 /* POSIX non-blocking I/O */
 #endif /* BORGCUBES */
 
+#include "uthash.h"
+
+struct hobyni {
+	char *nick;
+	char *user;
+	char *host;
+	UT_hash_handle hh;
+};
+
+extern struct hobyni *hostbynick;
+
+void change_nick(char*, char*);
+void del_nick(char*);
+void add_nick(char*, char*, char*);
+char *find_host_by_nick(char*);
+
 #endif /* _EGG_MAIN_H */

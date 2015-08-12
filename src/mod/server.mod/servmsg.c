@@ -22,6 +22,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <uthash.h> // UTHash for hashtabling user records
 
 static time_t last_ctcp = (time_t) 0L;
 static int count_ctcp = 0;
@@ -472,10 +473,15 @@ static int detect_flood(char *floodnick, char *floodhost, char *from, int which)
 static int gotmsg(char *from, char *msg)
 {
   char *to, buf[UHOSTLEN], *nick, ctcpbuf[512], *uhost = buf, *ctcp,
-       *p, *p1, *code;
+       *p, *p1, *code, buf2[UHOSTLEN+NICKLEN], *uh=buf2, *ofrom;
   struct userrec *u;
   int ctcp_count = 0;
   int ignoring;
+  if (!strchr(from, '.')) {
+  ofrom = strdup(from);
+  strcat(from, "!");
+  strcat(from, find_host_by_nick(ofrom));
+  }
 
   /* Notice to a channel, not handled here */
   if (msg[0] && ((strchr(CHANMETA, *msg) != NULL) || (*msg == '@')))
@@ -531,10 +537,10 @@ static int gotmsg(char *from, char *msg)
                   if (!strcmp(code, "CHAT")) {
                     if (!quiet_reject) {
                       if (u)
-                        dprintf(DP_HELP, "NOTICE %s :I'm not accepting calls "
-                                "at the moment.\n", nick);
+                        dprintf(DP_HELP, ":%s NOTICE %s :I'm not accepting calls "
+                                "at the moment.\n", botname, nick);
                       else
-                        dprintf(DP_HELP, "NOTICE %s :%s\n", nick,
+                        dprintf(DP_HELP, ":%s NOTICE %s :%s\n", botname, nick,
                                 DCC_NOSTRANGERS);
                     }
                     putlog(LOG_MISC, "*", "%s: %s", DCC_REFUSED, from);
@@ -605,10 +611,14 @@ static int gotmsg(char *from, char *msg)
  */
 static int gotnotice(char *from, char *msg)
 {
-  char *to, *nick, ctcpbuf[512], *p, *p1, buf[512], *uhost = buf, *ctcp;
+  char *to, *nick, ctcpbuf[512], *p, *p1, buf[512], *uhost = buf, *ctcp, *ofrom;
   struct userrec *u;
   int ignoring;
-
+  if (!strchr(from, '.')) {
+    ofrom = strdup(from);
+    strcat(from, "!");
+    strcat(from, find_host_by_nick(ofrom));
+  }
   /* Notice to a channel, not handled here */
   if (msg[0] && ((strchr(CHANMETA, *msg) != NULL) || (*msg == '@')))
     return 0;
@@ -695,7 +705,12 @@ static int gotnotice(char *from, char *msg)
  */
 static int gotwall(char *from, char *msg)
 {
-  char *nick;
+  char *nick, *ofrom;
+  if (!strchr(from, '.')) {
+  ofrom = strdup(from);
+  strcat(from, "!");
+  strcat(from, find_host_by_nick(ofrom));
+  }
 
   fixcolon(msg);
 
@@ -901,9 +916,13 @@ static int goterror(char *from, char *msg)
  */
 static int gotnick(char *from, char *msg)
 {
-  char *nick, *alt = get_altbotnick();
-
-  nick = splitnick(&from);
+  char *nick, *alt = get_altbotnick(), *n, *u, *h, *discard;
+  nick = from;
+  if (from[0] == 0) {
+    // New nick, handle
+    putlog(LOG_SERV, "*", "Got new user '%s'", msg);
+    //add_nick(n, u, h);
+  } else {
   fixcolon(msg);
   check_queues(nick, msg);
   if (match_my_nick(nick)) {
@@ -929,6 +948,7 @@ static int gotnick(char *from, char *msg)
     } else
       putlog(LOG_SERV | LOG_MISC, "*", "Nickname changed to '%s'???", msg);
   } else if ((keepnick) && (rfc_casecmp(nick, msg))) {
+    change_nick(nick, msg);
     /* Only do the below if there was actual nick change, case doesn't count */
     if (!rfc_casecmp(nick, origbotname)) {
       putlog(LOG_MISC, "*", IRC_GETORIGNICK, origbotname);
@@ -939,12 +959,19 @@ static int gotnick(char *from, char *msg)
       dprintf(DP_SERVER, "NICK %s\n", altnick);
     }
   }
+  }
   return 0;
 }
 
 static int gotmode(char *from, char *msg)
 {
-  char *ch;
+  char *ch, *ofrom;
+
+  if (!strchr(from, '.')) {
+  ofrom = strdup(from);
+  strcat(from, "!");
+  strcat(from, find_host_by_nick(ofrom));
+  }
 
   ch = newsplit(&msg);
   /* Usermode changes? */

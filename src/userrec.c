@@ -40,6 +40,8 @@ extern time_t now;
 
 int noshare = 1;                   /* don't send out to sharebots   */
 struct userrec *userlist = NULL;   /* user records are stored here  */
+struct hostmasks *hostmasks = NULL; // I don't even KNOW! - janicez
+struct hostmasks *lastmasks = NULL; // I don't even KNOW! - janicez
 struct userrec *lastuser = NULL;   /* last accessed user record     */
 maskrec *global_bans = NULL, *global_exempts = NULL, *global_invites = NULL;
 struct igrec *global_ign = NULL;
@@ -872,6 +874,29 @@ struct userrec *get_user_by_nick(char *nick)
         egg_snprintf(word, sizeof word, "%s!%s", m->nick, m->userhost);
         /* No need to check the return value ourself */
         return get_user_by_host(word);;
+      }
+    }
+  }
+  /* Sorry, no matches */
+  return NULL;
+}
+
+/*  Go through all channel records and try to find a matching
+ *  nick. Will return the user's user record if that is known
+ *  to the bot.  (Fabian)
+ *
+ *  Warning: This is unreliable by concept!
+ */
+char *get_host_by_nick(char *nick)
+{
+  struct chanset_t *chan;
+  memberlist *m;
+
+  for (chan = chanset; chan; chan = chan->next) {
+    for (m = chan->channel.member; m && m->nick[0]; m = m->next) {
+      if (!rfc_casecmp(nick, m->nick)) {
+        /* No need to check the return value ourself */
+        return m->userhost;
       }
     }
   }

@@ -219,3 +219,8 @@ users.o: users.c main.h ../config.h ../lush.h lang.h eggdrop.h flags.h \
   compat/compat.h compat/inet_aton.h ../src/main.h compat/snprintf.h \
   compat/memset.h compat/memcpy.h compat/strcasecmp.h compat/strftime.h \
   modules.h mod/modvals.h tandem.h
+hash.o: hash.c main.h ../config.h ../lush.h lang.h eggdrop.h flags.h \
+  proto.h misc_file.h cmdt.h tclegg.h tclhash.h chan.h users.h \
+  compat/compat.h compat/inet_aton.h ../src/main.h compat/snprintf.h \
+  compat/memset.h compat/memcpy.h compat/strcasecmp.h compat/strftime.h \
+  modules.h mod/modvals.h tandem.h
