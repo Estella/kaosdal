@@ -1612,7 +1612,7 @@ static int tcl_channel_modify(Tcl_Interp *irp, struct chanset_t *chan,
     if (((old_status ^ chan->status) & CHAN_INACTIVE) &&
         module_find("irc", 0, 0)) {
       if (channel_inactive(chan) && (chan->status & (CHAN_ACTIVE | CHAN_PEND)))
-        dprintf(DP_SERVER, "PART %s\n", chan->name);
+        dprintf(DP_SERVER, ":%s PART %s\n", botname,chan->name);
       if (!channel_inactive(chan) &&
           !(chan->status & (CHAN_ACTIVE | CHAN_PEND))) {
         char *key;

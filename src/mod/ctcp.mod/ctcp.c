@@ -194,17 +194,17 @@ static int ctcp_CHAT(char *nick, char *uhost, char *handle, char *object,
 }
 
 static cmd_t myctcp[] = {
-  {"FINGER",     "",   ctcp_FINGER,     NULL},
-  {"ECHO",       "",   ctcp_ECHOERR,    NULL},
-  {"PING",       "",   ctcp_PING,       NULL},
-  {"ERRMSG",     "",   ctcp_ECHOERR,    NULL},
-  {"VERSION",    "",   ctcp_VERSION,    NULL},
-  {"USERINFO",   "",   ctcp_USERINFO,   NULL},
-  {"CLIENTINFO", "",   ctcp_CLIENTINFO, NULL},
-  {"TIME",       "",   ctcp_TIME,       NULL},
-  {"CHAT",       "",   ctcp_CHAT,       NULL},
+  {"FINGER",    "",   ctcp_FINGER,     NULL},
+  {"ECHO",      "",   ctcp_ECHOERR,    NULL},
+  {"PING",      "",   ctcp_PING,       NULL},
+  {"ERRMSG",    "",   ctcp_ECHOERR,    NULL},
+  {"VERSION",   "",   ctcp_VERSION,    NULL},
+  {"USERINFO",  "",   ctcp_USERINFO,   NULL},
+  {"CLIENTINFO","",   ctcp_CLIENTINFO, NULL},
+  {"TIME",      "",   ctcp_TIME,       NULL},
+  {"CHAT",      "",   ctcp_CHAT,       NULL},
 #ifdef TLS
-  {"SCHAT",      "",   ctcp_CHAT,       NULL},
+  {"SCHAT",     "",   ctcp_CHAT,       NULL},
 #endif
   {NULL,         NULL, NULL,            NULL}
 };

@@ -985,8 +985,8 @@ void parserespacket(u_8bit_t *response, int len)
               resourcetypes[RESOURCETYPES_COUNT]);
       continue;
     }
-    ddebug1(RES_MSG "TTL: %s", strtdiff(sendstring, rr->ttl));
-    ddebug1(RES_MSG "TYPE: %s", (rr->datatype < RESOURCETYPES_COUNT) ?
+    ddebug1(RES_MSG "TTL: %s",strtdiff(sendstring, rr->ttl));
+    ddebug1(RES_MSG "TYPE: %s",(rr->datatype < RESOURCETYPES_COUNT) ?
             resourcetypes[rr->datatype] : resourcetypes[RESOURCETYPES_COUNT]);
     switch (rr->datatype) {
       case T_A:

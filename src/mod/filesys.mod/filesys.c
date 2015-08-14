@@ -249,7 +249,7 @@ static void dcc_files(int idx, char *buf, int i)
   } else if (got_files_cmd(idx, buf)) {
     dprintf(idx, "*** Ja mata!\n");
     flush_lines(idx, dcc[idx].u.file->chat);
-    putlog(LOG_FILES, "*", "DCC user [%s]%s left file system", dcc[idx].nick,
+    putlog(LOG_FILES, "*", ":%s DCC user [%s]%s left file system", botname,dcc[idx].nick,
            dcc[idx].host);
     set_user(&USERENTRY_DCCDIR, dcc[idx].user, dcc[idx].u.file->dir);
     if (dcc[idx].status & STAT_CHAT) {
@@ -372,7 +372,7 @@ static int _dcc_send(int idx, char *filename, char *nick, char *dir,
     x = raw_dcc_send(filename, nick, dcc[idx].nick, dir);
   if (x == DCCSEND_FULL) {
     dprintf(idx, "Sorry, too many DCC connections.  (try again later)\n");
-    putlog(LOG_FILES, "*", "DCC connections full: %sGET %s [%s]", filename,
+    putlog(LOG_FILES, "*", ":%s DCC connections full: %sGET %s [%s]", botname,filename,
            resend ? "RE" : "", dcc[idx].nick);
     return 0;
   }
@@ -383,20 +383,20 @@ static int _dcc_send(int idx, char *filename, char *nick, char *dir,
              resend ? "RE" : "", filename, dcc[idx].nick);
     } else {
       dprintf(idx, "Unable to listen at a socket.\n");
-      putlog(LOG_FILES, "*", "DCC socket error: %sGET %s [%s]", filename,
+      putlog(LOG_FILES, "*", ":%s DCC socket error: %sGET %s [%s]", botname,filename,
              resend ? "RE" : "", dcc[idx].nick);
     }
     return 0;
   }
   if (x == DCCSEND_BADFN) {
     dprintf(idx, "File not found ?\n");
-    putlog(LOG_FILES, "*", "DCC file not found: %sGET %s [%s]", filename,
+    putlog(LOG_FILES, "*", ":%s DCC file not found: %sGET %s [%s]", botname,filename,
            resend ? "RE" : "", dcc[idx].nick);
     return 0;
   }
   if (x == DCCSEND_FEMPTY) {
     dprintf(idx, "The file is empty.  Aborted transfer.\n");
-    putlog(LOG_FILES, "*", "DCC file is empty: %s [%s]", filename,
+    putlog(LOG_FILES, "*", ":%s DCC file is empty: %s [%s]", botname,filename,
            dcc[idx].nick);
     return 0;
   }
@@ -417,7 +417,7 @@ static int _dcc_send(int idx, char *filename, char *nick, char *dir,
   }
 
   if (egg_strcasecmp(nick, dcc[idx].nick))
-    dprintf(DP_HELP, "NOTICE %s :Here is %s file from %s %s...\n", nick,
+    dprintf(DP_HELP, ":%s NOTICE %s :Here is %s file from %s %s...\n", botname,nick,
             resend ? "the" : "a", dcc[idx].nick, resend ? "again " : "");
   dprintf(idx, "%sending: %s to %s\n", resend ? "Res" : "S", nfn, nick);
   my_free(buf);
@@ -663,29 +663,29 @@ static void filesys_dcc_send(char *nick, char *from, struct userrec *u,
     putlog(LOG_FILES, "*", "Refused DCC SEND %s (no access): %s!%s", param,
            nick, from);
     if (!quiet_reject)
-      dprintf(DP_HELP, "NOTICE %s :No access\n", nick);
+      dprintf(DP_HELP, ":%s NOTICE %s :No access\n", botname,nick);
   } else if (!dccin[0] && !upload_to_cd) {
-    dprintf(DP_HELP, "NOTICE %s :DCC file transfers not supported.\n", nick);
+    dprintf(DP_HELP, ":%s NOTICE %s :DCC file transfers not supported.\n", botname,nick);
     putlog(LOG_FILES, "*", "Refused dcc send %s from %s!%s", param, nick, from);
   } else if (strchr(param, '/')) {
-    dprintf(DP_HELP, "NOTICE %s :Filename cannot have '/' in it...\n", nick);
+    dprintf(DP_HELP, ":%s NOTICE %s :Filename cannot have '/' in it...\n", botname,nick);
     putlog(LOG_FILES, "*", "Refused dcc send %s from %s!%s", param, nick, from);
   } else {
     ip = newsplit(&msg);
     prt = newsplit(&msg);
     if (atoi(prt) < 1024 || atoi(prt) > 65535) {
       /* Invalid port */
-      dprintf(DP_HELP, "NOTICE %s :%s (invalid port)\n", nick,
+      dprintf(DP_HELP, ":%s NOTICE %s :%s (invalid port)\n", botname,nick,
               DCC_CONNECTFAILED1);
       putlog(LOG_FILES, "*", "Refused dcc send %s (%s): invalid port", param,
              nick);
     } else if (atoi(msg) == 0) {
-      dprintf(DP_HELP, "NOTICE %s :Sorry, file size info must be included.\n",
+      dprintf(DP_HELP, ":%s NOTICE %s :Sorry, file size info must be included.\n", botname,
               nick);
       putlog(LOG_FILES, "*", "Refused dcc send %s (%s): no file size",
              param, nick);
     } else if (dcc_maxsize && (atoi(msg) > (dcc_maxsize * 1024))) {
-      dprintf(DP_HELP, "NOTICE %s :Sorry, file too large.\n", nick);
+      dprintf(DP_HELP, ":%s NOTICE %s :Sorry, file too large.\n", botname,nick);
       putlog(LOG_FILES, "*", "Refused dcc send %s (%s): file too large", param,
              nick);
     } else {
@@ -696,8 +696,8 @@ static void filesys_dcc_send(char *nick, char *from, struct userrec *u,
       }
       i = new_dcc(&DCC_DNSWAIT, sizeof(struct dns_info));
       if (i < 0) {
-        dprintf(DP_HELP, "NOTICE %s :Sorry, too many DCC connections.\n", nick);
-        putlog(LOG_MISC, "*", "DCC connections full: SEND %s (%s!%s)", param,
+        dprintf(DP_HELP, ":%s NOTICE %s :Sorry, too many DCC connections.\n", botname,nick);
+        putlog(LOG_MISC, "*", ":%s DCC connections full: SEND %s (%s!%s)", botname,param,
                nick, from);
         return;
       }
@@ -797,7 +797,7 @@ static void filesys_dcc_send_hostresolved(int i)
   sprintf(s1, "%s%s", dcc[i].u.xfer->dir, dcc[i].u.xfer->origname);
 
   if (file_readable(s1)) {
-    dprintf(DP_HELP, "NOTICE %s :File `%s' already exists.\n", dcc[i].nick,
+    dprintf(DP_HELP, ":%s NOTICE %s :File `%s' already exists.\n", botname,dcc[i].nick,
             dcc[i].u.xfer->origname);
     lostdcc(i);
     my_free(s1);
@@ -809,7 +809,7 @@ static void filesys_dcc_send_hostresolved(int i)
         if ((dcc[j].type->flags & (DCT_FILETRAN | DCT_FILESEND)) ==
             (DCT_FILETRAN | DCT_FILESEND)) {
           if (!strcmp(dcc[i].u.xfer->origname, dcc[j].u.xfer->origname)) {
-            dprintf(DP_HELP, "NOTICE %s :File `%s' is already being sent.\n",
+            dprintf(DP_HELP, ":%s NOTICE %s :File `%s' is already being sent.\n", botname,
                     dcc[i].nick, dcc[i].u.xfer->origname);
             lostdcc(i);
             return;
@@ -823,7 +823,7 @@ static void filesys_dcc_send_hostresolved(int i)
     my_free(s1);
     if (dcc[i].u.xfer->f == NULL) {
       dprintf(DP_HELP,
-              "NOTICE %s :Can't create file `%s' (temp dir error)\n",
+              ":%s NOTICE %s :Can't create file `%s' (temp dir error)\n", botname,
               dcc[i].nick, dcc[i].u.xfer->origname);
       lostdcc(i);
     } else {
@@ -853,7 +853,7 @@ static int filesys_DCC_CHAT(char *nick, char *from, char *handle,
 
   if (egg_strcasecmp(object, botname))
     return 0;
-  if (!egg_strncasecmp(text, "SEND ", 5)) {
+  if (!egg_strncasecmp(text, "SEND ",5)) {
 #ifdef TLS
     filesys_dcc_send(nick, from, u, text + 5, 0);
 #else
@@ -862,27 +862,27 @@ static int filesys_DCC_CHAT(char *nick, char *from, char *handle,
     return 1;
   }
 #ifdef TLS
-  if (!egg_strncasecmp(text, "SSEND ", 5)) {
+  if (!egg_strncasecmp(text, "SSEND ",5)) {
     filesys_dcc_send(nick, from, u, text + 5, 1);
     return 1;
   }
 #endif
-  if (egg_strncasecmp(text, "CHAT ", 5) || !u)
+  if (egg_strncasecmp(text, "CHAT ",5) || !u)
     return 0;
   strcpy(buf, text + 5);
   get_user_flagrec(u, &fr, 0);
   param = newsplit(&msg);
   if (dcc_total == max_dcc && increase_socks_max()) {
-    putlog(LOG_MISC, "*", DCC_TOOMANYDCCS2, "CHAT(file)", param, nick, from);
+    putlog(LOG_MISC, "*", DCC_TOOMANYDCCS2, ":%s CHAT(file)", botname,param, nick, from);
   } else if (glob_party(fr) || (!require_p && chan_op(fr)))
     return 0;                   /* Allow ctcp.so to pick up the chat */
   else if (!glob_xfer(fr)) {
     if (!quiet_reject)
-      dprintf(DP_HELP, "NOTICE %s :%s\n", nick, DCC_REFUSED2);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s\n", botname,nick, DCC_REFUSED2);
     putlog(LOG_MISC, "*", "%s: %s!%s", DCC_REFUSED, nick, from);
   } else if (u_pass_match(u, "-")) {
     if (!quiet_reject)
-      dprintf(DP_HELP, "NOTICE %s :%s\n", nick, DCC_REFUSED3);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s\n", botname,nick, DCC_REFUSED3);
     putlog(LOG_MISC, "*", "%s: %s!%s", DCC_REFUSED4, nick, from);
   } else if (!dccdir[0]) {
     putlog(LOG_MISC, "*", "%s: %s!%s", DCC_REFUSED5, nick, from);
@@ -892,7 +892,7 @@ static int filesys_DCC_CHAT(char *nick, char *from, char *handle,
     if (atoi(prt) < 1024 || atoi(prt) > 65535) {
       /* Invalid port */
       if (!quiet_reject)
-        dprintf(DP_HELP, "NOTICE %s :%s (invalid port)\n", nick,
+        dprintf(DP_HELP, ":%s NOTICE %s :%s (invalid port)\n", botname,nick,
                 DCC_CONNECTFAILED1);
       putlog(LOG_FILES, "*", "%s: %s!%s", DCC_REFUSED7, nick, from);
       return 1;
@@ -902,7 +902,7 @@ static int filesys_DCC_CHAT(char *nick, char *from, char *handle,
     if (dcc[i].sock < 0) {
       lostdcc(i);
       if (!quiet_reject)
-        dprintf(DP_HELP, "NOTICE %s :%s (%s)\n", nick, DCC_CONNECTFAILED1, strerror(errno));
+        dprintf(DP_HELP, ":%s NOTICE %s :%s (%s)\n", botname,nick, DCC_CONNECTFAILED1, strerror(errno));
       putlog(LOG_MISC, "*", "%s: CHAT(file) (%s!%s)", DCC_CONNECTFAILED2, nick,
              from);
       putlog(LOG_MISC, "*", "    (%s)", strerror(errno));
@@ -914,7 +914,7 @@ static int filesys_DCC_CHAT(char *nick, char *from, char *handle,
       dcc[i].u.file->chat = get_data_ptr(sizeof(struct chat_info));
       strcpy(dcc[i].u.file->chat->con_chan, "*");
       dcc[i].user = u;
-      putlog(LOG_MISC, "*", "DCC connection: CHAT(file) (%s!%s)", nick, from);
+      putlog(LOG_MISC, "*", ":%s DCC connection: CHAT(file) (%s!%s)", botname,nick, from);
       dprintf(i, "%s\n", DCC_ENTERPASS);
     }
   }

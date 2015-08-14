@@ -480,7 +480,7 @@ static void notes_read(char *hand, char *nick, char *srd, int idx)
     if (idx >= 0)
       dprintf(idx, "%s.\n", NOTES_NO_MESSAGES);
     else
-      dprintf(DP_HELP, "NOTICE %s :%s.\n", nick, NOTES_NO_MESSAGES);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s.\n", botname,nick, NOTES_NO_MESSAGES);
     return;
   }
   f = fopen(notefile, "r");
@@ -488,7 +488,7 @@ static void notes_read(char *hand, char *nick, char *srd, int idx)
     if (idx >= 0)
       dprintf(idx, "%s.\n", NOTES_NO_MESSAGES);
     else
-      dprintf(DP_HELP, "NOTICE %s :%s.\n", nick, NOTES_NO_MESSAGES);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s.\n", botname,nick, NOTES_NO_MESSAGES);
     return;
   }
   notes_parse(rd, srd);
@@ -523,13 +523,13 @@ static void notes_read(char *hand, char *nick, char *srd, int idx)
                 dprintf(idx, "### %s:\n", NOTES_WAITING);
               dprintf(idx, "  %2d. %s (%s)\n", ix, from, dt);
             } else
-              dprintf(DP_HELP, "NOTICE %s :%2d. %s (%s)\n", nick, ix, from,
+              dprintf(DP_HELP, ":%s NOTICE %s :%2d. %s (%s)\n", botname,nick, ix, from,
                       dt);
           } else if (notes_in(rd, ix)) {
             if (idx >= 0)
               dprintf(idx, "%2d. %s (%s): %s\n", ix, from, dt, s1);
             else
-              dprintf(DP_HELP, "NOTICE %s :%2d. %s (%s): %s\n", nick, ix, from,
+              dprintf(DP_HELP, ":%s NOTICE %s :%2d. %s (%s): %s\n", botname,nick, ix, from,
                       dt, s1);
             ir++;
           }
@@ -543,25 +543,25 @@ static void notes_read(char *hand, char *nick, char *srd, int idx)
     if (idx >= 0)
       dprintf(idx, "%s.\n", NOTES_NOT_THAT_MANY);
     else
-      dprintf(DP_HELP, "NOTICE %s :%s.\n", nick, NOTES_NOT_THAT_MANY);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s.\n", botname,nick, NOTES_NOT_THAT_MANY);
   }
   if (srd[0] == '+') {
     if (ix == 1) {
       if (idx >= 0)
         dprintf(idx, "%s.\n", NOTES_NO_MESSAGES);
       else
-        dprintf(DP_HELP, "NOTICE %s :%s.\n", nick, NOTES_NO_MESSAGES);
+        dprintf(DP_HELP, ":%s NOTICE %s :%s.\n", botname,nick, NOTES_NO_MESSAGES);
     } else {
       if (idx >= 0)
         dprintf(idx, "### %s\n", (ix != 2) ? NOTES_DCC_USAGE_READ : NOTES_DCC_USAGE_READ2);
       else
-        dprintf(DP_HELP, "NOTICE %s :%s: %d\n", nick, MISC_TOTAL, ix - 1);
+        dprintf(DP_HELP, ":%s NOTICE %s :%s: %d\n", botname,nick, MISC_TOTAL, ix - 1);
     }
   } else if ((ir == 0) && (ix == 1)) {
     if (idx >= 0)
       dprintf(idx, "%s.\n", NOTES_NO_MESSAGES);
     else
-      dprintf(DP_HELP, "NOTICE %s :%s.\n", nick, NOTES_NO_MESSAGES);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s.\n", botname,nick, NOTES_NO_MESSAGES);
   }
 }
 
@@ -584,7 +584,7 @@ static void notes_del(char *hand, char *nick, char *sdl, int idx)
     if (idx >= 0)
       dprintf(idx, "%s.\n", NOTES_NO_MESSAGES);
     else
-      dprintf(DP_HELP, "NOTICE %s :%s.\n", nick, NOTES_NO_MESSAGES);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s.\n", botname,nick, NOTES_NO_MESSAGES);
     return;
   }
   f = fopen(notefile, "r");
@@ -592,7 +592,7 @@ static void notes_del(char *hand, char *nick, char *sdl, int idx)
     if (idx >= 0)
       dprintf(idx, "%s.\n", NOTES_NO_MESSAGES);
     else
-      dprintf(DP_HELP, "NOTICE %s :%s.\n", nick, NOTES_NO_MESSAGES);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s.\n", botname,nick, NOTES_NO_MESSAGES);
     return;
   }
   sprintf(s, "%s~new", notefile);
@@ -601,7 +601,7 @@ static void notes_del(char *hand, char *nick, char *sdl, int idx)
     if (idx >= 0)
       dprintf(idx, "%s. :(\n", NOTES_FAILED_CHMOD);
     else
-      dprintf(DP_HELP, "NOTICE %s :%s. :(\n", nick, NOTES_FAILED_CHMOD);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s. :(\n", botname,nick, NOTES_FAILED_CHMOD);
     fclose(f);
     return;
   }
@@ -637,24 +637,24 @@ static void notes_del(char *hand, char *nick, char *sdl, int idx)
     if (idx >= 0)
       dprintf(idx, "%s.\n", NOTES_NOT_THAT_MANY);
     else
-      dprintf(DP_HELP, "NOTICE %s :%s.\n", nick, NOTES_NOT_THAT_MANY);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s.\n", botname,nick, NOTES_NOT_THAT_MANY);
   } else if (in == 1) {
     if (idx >= 0)
       dprintf(idx, "%s.\n", NOTES_NO_MESSAGES);
     else
-      dprintf(DP_HELP, "NOTICE %s :%s.\n", nick, NOTES_NO_MESSAGES);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s.\n", botname,nick, NOTES_NO_MESSAGES);
   } else {
     if (er == (in - 1)) {
       if (idx >= 0)
         dprintf(idx, "%s.\n", NOTES_ERASED_ALL);
       else
-        dprintf(DP_HELP, "NOTICE %s :%s.\n", nick, NOTES_ERASED_ALL);
+        dprintf(DP_HELP, ":%s NOTICE %s :%s.\n", botname,nick, NOTES_ERASED_ALL);
     } else {
       if (idx >= 0)
         dprintf(idx, "%s %d note%s; %d %s.\n", NOTES_ERASED, er,
                 (er != 1) ? "s" : "", in - 1 - er, NOTES_LEFT);
       else
-        dprintf(DP_HELP, "NOTICE %s :%s %d note%s; %d %s.\n", nick, MISC_ERASED,
+        dprintf(DP_HELP, ":%s NOTICE %s :%s %d note%s; %d %s.\n", botname,nick, MISC_ERASED,
                 er, (er != 1) ? "s" : "", in - 1 - er, NOTES_LEFT);
     }
   }
@@ -735,12 +735,12 @@ static int msg_notes(char *nick, char *host, struct userrec *u, char *par)
     return 1;
 
   if (!par[0]) {
-    dprintf(DP_HELP, "NOTICE %s :%s: NOTES <pass> INDEX\n", nick, NOTES_USAGE);
-    dprintf(DP_HELP, "NOTICE %s :NOTES <pass> TO <hand> <msg>\n", nick);
-    dprintf(DP_HELP, "NOTICE %s :NOTES <pass> READ <# or ALL>\n", nick);
-    dprintf(DP_HELP, "NOTICE %s :NOTES <pass> ERASE <# or ALL>\n", nick);
-    dprintf(DP_HELP, "NOTICE %s :%s\n", nick, NOTES_MAYBE);
-    dprintf(DP_HELP, "NOTICE %s :Ex: NOTES mypass ERASE 2-4;8;16-\n", nick);
+    dprintf(DP_HELP, ":%s NOTICE %s :%s: NOTES <pass> INDEX\n", botname,nick, NOTES_USAGE);
+    dprintf(DP_HELP, ":%s NOTICE %s :NOTES <pass> TO <hand> <msg>\n", botname,nick);
+    dprintf(DP_HELP, ":%s NOTICE %s :NOTES <pass> READ <# or ALL>\n", botname,nick);
+    dprintf(DP_HELP, ":%s NOTICE %s :NOTES <pass> ERASE <# or ALL>\n", botname,nick);
+    dprintf(DP_HELP, ":%s NOTICE %s :%s\n", botname,nick, NOTES_MAYBE);
+    dprintf(DP_HELP, ":%s NOTICE %s :Ex: NOTES mypass ERASE 2-4;8;16-\n", botname,nick);
     return 1;
   }
 
@@ -777,10 +777,10 @@ static int msg_notes(char *nick, char *host, struct userrec *u, char *par)
     }
     u2 = get_user_by_handle(userlist, to);
     if (!u2) {
-      dprintf(DP_HELP, "NOTICE %s :%s\n", nick, NOTES_USERF_UNKNOWN);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s\n", botname,nick, NOTES_USERF_UNKNOWN);
       return 1;
     } else if (is_bot(u2)) {
-      dprintf(DP_HELP, "NOTICE %s :%s\n", nick, NOTES_NOTTO_BOT);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s\n", botname,nick, NOTES_NOTTO_BOT);
       return 1;
     }
     for (i = 0; i < dcc_total; i++) {
@@ -796,27 +796,27 @@ static int msg_notes(char *nick, char *host, struct userrec *u, char *par)
                                  * store notes for later */
         if (aok) {
           dprintf(i, "\007%s [%s]: %s\n", u->handle, NOTES_OUTSIDE, par);
-          dprintf(DP_HELP, "NOTICE %s :%s\n", nick, NOTES_DELIVERED);
+          dprintf(DP_HELP, ":%s NOTICE %s :%s\n", botname,nick, NOTES_DELIVERED);
           return 1;
         }
       }
     }
     if (notefile[0] == 0) {
-      dprintf(DP_HELP, "NOTICE %s :%s\n", nick, NOTES_UNSUPPORTED);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s\n", botname,nick, NOTES_UNSUPPORTED);
       return 1;
     }
     f = fopen(notefile, "a");
     if (f == NULL)
       f = fopen(notefile, "w");
     if (f == NULL) {
-      dprintf(DP_HELP, "NOTICE %s :%s", nick, NOTES_NOTEFILE_FAILED);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s", botname,nick, NOTES_NOTEFILE_FAILED);
       putlog(LOG_MISC, "*", "* %s", NOTES_NOTEFILE_UNREACHABLE);
       return 1;
     }
     chmod(notefile, userfile_perm); /* Use userfile permissions. */
     fprintf(f, "%s %s %li %s\n", to, u->handle, (long) now, par);
     fclose(f);
-    dprintf(DP_HELP, "NOTICE %s :%s\n", nick, NOTES_DELIVERED);
+    dprintf(DP_HELP, ":%s NOTICE %s :%s\n", botname,nick, NOTES_DELIVERED);
     return 1;
   } else
     dprintf(DP_HELP, "NOTICE %s :%s: NOTES <pass> INDEX, READ, ERASE, TO\n",

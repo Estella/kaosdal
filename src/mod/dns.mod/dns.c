@@ -53,11 +53,11 @@ static void dns_event_success(struct resolve *rp, int type)
     return;
 
   if (type == T_PTR) {
-    debug2("DNS resolved %s to %s", iptostr(&rp->sockname.addr.sa),
+    debug2("DNS resolved %s to %s",iptostr(&rp->sockname.addr.sa),
            rp->hostn);
     call_hostbyip(&rp->sockname, rp->hostn, 1);
   } else if (type == T_A) {
-    debug2("DNS resolved %s to %s", rp->hostn,
+    debug2("DNS resolved %s to %s",rp->hostn,
            iptostr(&rp->sockname.addr.sa));
     call_ipbyhost(rp->hostn, &rp->sockname, 1);
   }
@@ -72,10 +72,10 @@ static void dns_event_failure(struct resolve *rp, int type)
     static char s[UHOSTLEN];
 
     strcpy(s, iptostr(&rp->sockname.addr.sa));
-    debug1("DNS resolve failed for %s", s);
+    debug1("DNS resolve failed for %s",s);
     call_hostbyip(&rp->sockname, s, 0);
   } else if (type == T_A) {
-    debug1("DNS resolve failed for %s", rp->hostn);
+    debug1("DNS resolve failed for %s",rp->hostn);
     call_ipbyhost(rp->hostn, &rp->sockname, 0);
   } else
     debug2("DNS resolve failed for unknown %s / %s",

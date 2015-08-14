@@ -193,6 +193,13 @@ static void flush_mode(struct chanset_t *chan, int pri)
       dprintf(DP_MODE, ":%s MODE %s %s\n", botname,chan->name, out);
     else
       dprintf(DP_SERVER, ":%s MODE %s %s\n", botname,chan->name, out);
+    char buf[512], *obuf=buf;
+    strcat(obuf, chan->name);
+    strcat(obuf, " ");
+    strcat(obuf, out);
+    char buf2[291+63+63], *hm = buf2;
+    sprintf(hm, "%s!%s@%s", botname, botuser, bothostname);
+    gotmode(hm, obuf); // Hack necessary to make bot realise the error of its ways ;p - janicez
   }
 }
 
@@ -360,18 +367,7 @@ static void real_add_mode(struct chanset_t *chan,
       }
     }
   }
-  modes = modesperline;         /* Check for full buffer. */
-  for (i = 0; i < modesperline; i++)
-    if (chan->cmode[i].type)
-      modes--;
-  if (include_lk && chan->limit)
-    modes--;
-  if (include_lk && chan->rmkey)
-    modes--;
-  if (include_lk && chan->key)
-    modes--;
-  if (modes < 1)
-    flush_mode(chan, NORMAL);   /* Full buffer! Flush modes. */
+  flush_mode(chan, QUICK);
 }
 
 
@@ -1015,7 +1011,16 @@ static int gotmode(char *from, char *origmsg)
   /* Usermode changes? */
   if (msg[0] && (strchr(CHANMETA, msg[0]) != NULL)) {
     ch = newsplit(&msg);
-    discard = newsplit(&msg);
+    if (msg[0] == '0' ||
+        msg[0] == '1' ||
+        msg[0] == '2' ||
+        msg[0] == '3' ||
+        msg[0] == '4' ||
+        msg[0] == '5' ||
+        msg[0] == '6' ||
+        msg[0] == '7' ||
+        msg[0] == '8' ||
+        msg[0] == '9' ) discard = newsplit(&msg);
     chg = newsplit(&msg);
     reversing = 0;
     chan = findchan(ch);

@@ -34,8 +34,6 @@
 #include "uthash.h"
 #include "main.h"
 
-struct hobyni *hostbynick = NULL;
-
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>

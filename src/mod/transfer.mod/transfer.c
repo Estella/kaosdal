@@ -278,7 +278,7 @@ static void eof_dcc_fork_send(int idx)
     unlink(dcc[idx].u.xfer->filename);
   } else {
     if (!quiet_reject)
-      dprintf(DP_HELP, "NOTICE %s :%s (%s)\n", dcc[idx].nick,
+      dprintf(DP_HELP, ":%s NOTICE %s :%s (%s)\n", botname,dcc[idx].nick,
               DCC_CONNECTFAILED1, strerror(errno));
     putlog(LOG_MISC, "*", "%s: SEND %s (%s!%s)", DCC_CONNECTFAILED2,
            dcc[idx].u.xfer->origname, dcc[idx].nick, dcc[idx].host);

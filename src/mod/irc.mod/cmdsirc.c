@@ -762,7 +762,7 @@ static void cmd_channel(struct userrec *u, int idx, char *par)
     dprintf(idx, "(n = owner, m = master, o = op, d = deop, b = bot)\n");
     egg_snprintf(format, sizeof format, " %%-%us %%-%us %%-6s %%-5s %%s\n",
                  maxnicklen, maxhandlen);
-    dprintf(idx, format, "NICKNAME", "HANDLE", " JOIN", "IDLE", "USER@HOST");
+    dprintf(idx, format, ":%s NICKNAME", botname,":%s HANDLE", botname," JOIN", ":%s IDLE", botname,"USER@HOST");
     for (m = chan->channel.member; m && m->nick[0]; m = m->next) {
       if (m->joined > 0) {
         if ((now - (m->joined)) > 86400)

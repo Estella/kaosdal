@@ -1225,7 +1225,7 @@ void showhelp(char *who, char *file, struct flag_record *flags, int fl)
           strcpy(s, " ");
         help_subst(s, who, flags, 0, file);
         if ((s[0]) && (strlen(s) > 1)) {
-          dprintf(DP_HELP, "NOTICE %s :%s\n", who, s);
+          dprintf(DP_HELP, ":%s NOTICE %s :%s\n", botname, who, s);
           lines++;
         }
       }
@@ -1233,7 +1233,7 @@ void showhelp(char *who, char *file, struct flag_record *flags, int fl)
     fclose(f);
   }
   if (!lines && !(fl & HELP_TEXT))
-    dprintf(DP_HELP, "NOTICE %s :%s\n", who, IRC_NOHELP2);
+    dprintf(DP_HELP, ":%s NOTICE %s :%s\n", botname, who, IRC_NOHELP2);
 }
 
 static int display_tellhelp(int idx, char *file, FILE *f,

@@ -2143,7 +2143,8 @@ static int gotnick(char *from, char *msg)
   struct chanset_t *chan, *oldchan = NULL;
   struct userrec *u;
   struct flag_record fr = { FR_GLOBAL | FR_CHAN, 0, 0, 0, 0, 0 };
-  if (from[0] == 0) {
+  Context;
+  if (from[0] == 0 || from[0] == '!') {
     // New nick, handle
     n = newsplit(&msg);
     discard = newsplit(&msg);
@@ -2155,9 +2156,18 @@ static int gotnick(char *from, char *msg)
     add_nick(n, id, h);
     return 0;
   }
+  Context;
   strcpy(uhost, from);
+  Context;
   nick = splitnick(&uhost);
-  fixcolon(msg);
+  Context;
+  if (msg[0] == ':') *msg++;
+  for (n = msg; *n != '\0'; *n++)
+    if (*n == ' ') *n = '\0'; // One fucking beautiful hack. -_- - janicez
+  Context;
+  putlog (LOG_JOIN, "*", ":%s NICK CHANGE FOR %s TO %s", botname,nick, msg);
+  change_nick(nick, msg);
+  Context;
   clear_chanlist_member(nick);  /* Cache for nick 'nick' is meaningless now. */
   for (chan = chanset; chan; chan = chan->next) {
     oldchan = chan;
@@ -2233,15 +2243,11 @@ static int gotquit(char *from, char *msg)
 {
   char *nick, *chname, *p, *alt;
   int split = 0;
-  char from2[NICKMAX + UHOSTMAX + 1];
   memberlist *m;
   struct chanset_t *chan, *oldchan = NULL;
   struct userrec *u;
-
-  strcpy(from2, from);
-  strcat(from2, "!");
-  strcat(from2, find_host_by_nick(from));
-  u = get_user_by_host(from2);
+  char frombuf[291];
+  u = get_user_by_host(from);
   nick = from;
   fixcolon(msg);
   /* Fred1: Instead of expensive wild_match on signoff, quicker method.
@@ -2269,7 +2275,7 @@ static int gotquit(char *from, char *msg)
     chname = chan->dname;
     m = ismember(chan, nick);
     if (m) {
-      u = get_user_by_host(from2);
+      u = get_user_by_host(from);
       if (u)
         /* If you remove this, the bot will crash when the user record in
          * question is removed/modified during the tcl binds below, and the
@@ -2324,11 +2330,6 @@ static int gotmsg(char *from, char *msg)
   int ctcp_count = 0, ignoring;
   struct chanset_t *chan;
   struct userrec *u;
-  if (!strchr(from, '.')) {
-  ofrom = strdup(from);
-  strcat(from, "!");
-  strcat(from, find_host_by_nick(ofrom));
-  }
 
   /* Only handle if message is to a channel, or to @#channel. */
   /* FIXME: Properly handle ovNotices (@+#channel), vNotices (+#channel), etc. */
@@ -2359,7 +2360,7 @@ static int gotmsg(char *from, char *msg)
       ctcp = buf2;
       strcpy(ctcp, p1);
       strcpy(p1 - 1, p + 1);
-      detect_chan_flood(nick, uhost, from, chan, strncmp(ctcp, "ACTION ", 7) ?
+      detect_chan_flood(nick, uhost, from, chan, strncmp(ctcp, "ACTION ",7) ?
                         FLOOD_CTCP : FLOOD_PRIVMSG, NULL);
 
       chan = findchan(realto);
@@ -2480,7 +2481,7 @@ static int gotnotice(char *from, char *msg)
       strcpy(p1 - 1, p + 1);
       p = strchr(msg, 1);
       detect_chan_flood(nick, uhost, from, chan,
-                        strncmp(ctcp, "ACTION ", 7) ?
+                        strncmp(ctcp, "ACTION ",7) ?
                         FLOOD_CTCP : FLOOD_PRIVMSG, NULL);
 
       chan = findchan(realto);
@@ -2540,20 +2541,20 @@ static cmd_t irc_raw[] = {
   {"473",     "",   (IntFunc) got473,       "irc:473"},
   {"474",     "",   (IntFunc) got474,       "irc:474"},
   {"475",     "",   (IntFunc) got475,       "irc:475"},
-  {"INVITE",  "",   (IntFunc) gotinvite, "irc:invite"},
-  {"TOPIC",   "",   (IntFunc) gottopic,   "irc:topic"},
+  {"INVITE", "",   (IntFunc) gotinvite, "irc:invite"},
+  {"TOPIC",  "",   (IntFunc) gottopic,   "irc:topic"},
   {"331",     "",   (IntFunc) got331,       "irc:331"},
   {"332",     "",   (IntFunc) got332,       "irc:332"},
   {"332",     "",   (IntFunc) got332,       "irc:332"},
-  {"JOIN",    "",   (IntFunc) gotjoin,     "irc:join"},
-  {"SJOIN",   "",   (IntFunc) gotsjoin,   "irc:sjoin"},
-  {"PART",    "",   (IntFunc) gotpart,     "irc:part"},
-  {"KICK",    "",   (IntFunc) gotkick,     "irc:kick"},
-  {"NICK",    "",   (IntFunc) gotnick,     "irc:nick"},
-  {"QUIT",    "",   (IntFunc) gotquit,     "irc:quit"},
-  {"PRIVMSG", "",   (IntFunc) gotmsg,       "irc:msg"},
-  {"NOTICE",  "",   (IntFunc) gotnotice, "irc:notice"},
-  {"MODE",    "",   (IntFunc) gotmode,     "irc:mode"},
+  {"JOIN",   "",   (IntFunc) gotjoin,     "irc:join"},
+  {"SJOIN",  "",   (IntFunc) gotsjoin,   "irc:sjoin"},
+  {"PART",   "",   (IntFunc) gotpart,     "irc:part"},
+  {"KICK",   "",   (IntFunc) gotkick,     "irc:kick"},
+  {"NICK",   "",   (IntFunc) gotnick,     "irc:nick"},
+  {"QUIT",   "",   (IntFunc) gotquit,     "irc:quit"},
+  {"PRIVMSG","",   (IntFunc) gotmsg,       "irc:msg"},
+  {"NOTICE", "",   (IntFunc) gotnotice, "irc:notice"},
+  {"MODE",   "",   (IntFunc) gotmode,     "irc:mode"},
   {"346",     "",   (IntFunc) got346,       "irc:346"},
   {"347",     "",   (IntFunc) got347,       "irc:347"},
   {"348",     "",   (IntFunc) got348,       "irc:348"},

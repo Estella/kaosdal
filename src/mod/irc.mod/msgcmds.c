@@ -243,8 +243,8 @@ static int msg_addhost(char *nick, char *host, struct userrec *u, char *par)
         dprintf(DP_HELP, ":%s NOTICE %s :%s\n", botname,nick, IRC_DENYACCESS);
     } else if (get_user_by_host(par)) {
       if (!quiet_reject)
-        dprintf(DP_HELP, "NOTICE %s :That hostmask clashes with another "
-                "already in use.\n", nick);
+        dprintf(DP_HELP, ":%s NOTICE %s :That hostmask clashes with another "
+                "already in use.\n", botname, nick);
     } else {
       putlog(LOG_CMDS, "*", "(%s!%s) !*! ADDHOST %s", nick, host, par);
       dprintf(DP_HELP, ":%s NOTICE %s :%s: %s\n", botname,nick, IRC_ADDHOSTMASK, par);
@@ -341,7 +341,7 @@ static int msg_info(char *nick, char *host, struct userrec *u, char *par)
   }
   if (p && p[0]) {
     dprintf(DP_HELP, ":%s NOTICE %s :%s %s\n", botname,nick, IRC_FIELDCURRENT, p);
-    dprintf(DP_HELP, "NOTICE %s :%s /msg %s info <pass>%s%s none\n",
+    dprintf(DP_HELP, ":%s NOTICE %s :%s /msg %s info <pass>%s%s none\n", botname,
             nick, IRC_FIELDTOREMOVE, botname, chname ? " " : "", chname
             ? chname : "");
   } else {
@@ -408,11 +408,11 @@ static int msg_who(char *nick, char *host, struct userrec *u, char *par)
       dprintf(DP_HELP, ":%s NOTICE %s :[%9s] %s\n", botname,nick, m->nick, info);
     else {
       if (match_my_nick(m->nick))
-        dprintf(DP_HELP, "NOTICE %s :[%9s] <-- I'm the bot, of course.\n",
+        dprintf(DP_HELP, ":%s NOTICE %s :[%9s] <-- I'm the bot, of course.\n", botname,
                 nick, m->nick);
       else if (u && (u->flags & USER_BOT)) {
         if (bot_flags(u) & BOT_SHARE)
-          dprintf(DP_HELP, "NOTICE %s :[%9s] <-- a twin of me\n",
+          dprintf(DP_HELP, ":%s NOTICE %s :[%9s] <-- a twin of me\n", botname,
                   nick, m->nick);
         else
           dprintf(DP_HELP, ":%s NOTICE %s :[%9s] <-- another bot\n", botname,nick, m->nick);
@@ -658,7 +658,7 @@ static int msg_key(char *nick, char *host, struct userrec *u, char *par)
     /* Prevent people from getting key with no pass set */
     if (!u_pass_match(u, "-")) {
       if (!(chan = findchan_by_dname(par))) {
-        dprintf(DP_HELP, "NOTICE %s :%s: /MSG %s key <pass> <channel>\n",
+        dprintf(DP_HELP, ":%s NOTICE %s :%s: /MSG %s key <pass> <channel>\n",botname,
                 nick, MISC_USAGE, botname);
         return 1;
       }
@@ -680,7 +680,7 @@ static int msg_key(char *nick, char *host, struct userrec *u, char *par)
               dprintf(DP_SERVER, ":%s INVITE %s %s\n", botname,nick, chan->name);
             }
           } else {
-            dprintf(DP_HELP, "NOTICE %s :%s: no key set for this channel\n",
+            dprintf(DP_HELP, ":%s NOTICE %s :%s: no key set for this channel\n", botname,
                     nick, par);
             putlog(LOG_CMDS, "*", "(%s!%s) !%s! KEY %s", nick, host, u->handle,
                    par);
@@ -762,7 +762,7 @@ static int msg_invite(char *nick, char *host, struct userrec *u, char *par)
       return 1;
     }
     if (!(chan = findchan_by_dname(par))) {
-      dprintf(DP_HELP, "NOTICE %s :%s: /MSG %s invite <pass> <channel>\n",
+      dprintf(DP_HELP, ":%s NOTICE %s :%s: /MSG %s invite <pass> <channel>\n", botname,
               nick, MISC_USAGE, botname);
       return 1;
     }
@@ -825,7 +825,7 @@ static int msg_status(char *nick, char *host, struct userrec *u, char *par)
   putlog(LOG_CMDS, "*", "(%s!%s) !%s! STATUS", nick, host, u->handle);
 
   i = count_users(userlist);
-  dprintf(DP_HELP, "NOTICE %s :I am %s, running %s: %d user%s  (mem: %uk).\n",
+  dprintf(DP_HELP, ":%s NOTICE %s :I am %s, running %s: %d user%s  (mem: %uk).\n", botname,
           nick, botnetnick, ver, i, i == 1 ? "" : "s",
          (int) (expected_memory() / 1024));
 

@@ -353,6 +353,7 @@ static int killmember(struct chanset_t *chan, char *nick)
  */
 static int me_op(struct chanset_t *chan)
 {
+  return 1; // Due to being an S2S bot, it can ALWAYS assume it is an op, even if it isn't, because it will be U:lined if the server admins are not randumbs.
   memberlist *mx = NULL;
 
   mx = ismember(chan, botname);
@@ -383,6 +384,7 @@ static int me_halfop(struct chanset_t *chan)
  */
 static int me_voice(struct chanset_t *chan)
 {
+  return 1; // Due to being an S2S bot, it can ALWAYS assume it is an op, even if it isn't, because it will be U:lined if the server admins are not randumbs.
   memberlist *mx;
 
   mx = ismember(chan, botname);

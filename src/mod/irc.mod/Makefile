@@ -20,7 +20,7 @@ modules: ../../../irc.$(MOD_EXT)
 	mv irc.o ../
 
 ../../../irc.$(MOD_EXT): ../irc.o
-	$(LD) -o ../../../irc.$(MOD_EXT) ../irc.o $(XLIBS) $(MODULE_XLIBS) ../../hash.o
+	$(LD) -o ../../../irc.$(MOD_EXT) ../irc.o $(XLIBS) $(MODULE_XLIBS)
 	$(STRIP) ../../../irc.$(MOD_EXT)
 
 depend:
@@ -45,4 +45,4 @@ distclean: clean
   ../../../src/mod/server.mod/server.h \
   ../../../src/mod/channels.mod/channels.h .././irc.mod/chan.c \
   .././irc.mod/mode.c .././irc.mod/cmdsirc.c .././irc.mod/msgcmds.c \
-  .././irc.mod/tclirc.c ../../../src/hash.c
+  .././irc.mod/tclirc.c

@@ -30,7 +30,7 @@ void add_nick (char *nick, char *user, char *host)
 	struct hobyni *h;
 	HASH_FIND_STR(hostbynick, &old, h);
 	if (h!=NULL) {
-		putlog(LOG_SERV, "*", "WARNING: attempt to add_nick() already existing nickname! %s", nick);
+		putlog(LOG_SERV, "*", ":%s WARNING: attempt to add_nick() already existing nickname! %s", botname,nick);
 		HASH_DEL_STR(hostbynick, h);
 		free(h);
 	}

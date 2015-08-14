@@ -668,12 +668,12 @@ static void display_ban(int idx, int number, maskrec *ban,
     if (number >= 0)
       dprintf(idx, "  [%3d] %s %s\n", number, ban->mask, s);
     else
-      dprintf(idx, "BAN: %s %s\n", ban->mask, s);
+      dprintf(idx, ":%s BAN: %s %s\n", botname,ban->mask, s);
   } else if (show_inact) {
     if (number >= 0)
       dprintf(idx, "! [%3d] %s %s\n", number, ban->mask, s);
     else
-      dprintf(idx, "BAN (%s): %s %s\n", MODES_INACTIVE, ban->mask, s);
+      dprintf(idx, ":%s BAN (%s): %s %s\n", botname,MODES_INACTIVE, ban->mask, s);
   } else
     return;
   dprintf(idx, "        %s: %s\n", ban->user, ban->desc);
@@ -714,12 +714,12 @@ static void display_exempt(int idx, int number, maskrec *exempt,
     if (number >= 0)
       dprintf(idx, "  [%3d] %s %s\n", number, exempt->mask, s);
     else
-      dprintf(idx, "EXEMPT: %s %s\n", exempt->mask, s);
+      dprintf(idx, ":%s EXEMPT: %s %s\n", botname,exempt->mask, s);
   } else if (show_inact) {
     if (number >= 0)
       dprintf(idx, "! [%3d] %s %s\n", number, exempt->mask, s);
     else
-      dprintf(idx, "EXEMPT (%s): %s %s\n", MODES_INACTIVE, exempt->mask, s);
+      dprintf(idx, ":%s EXEMPT (%s): %s %s\n", botname,MODES_INACTIVE, exempt->mask, s);
   } else
     return;
   dprintf(idx, "        %s: %s\n", exempt->user, exempt->desc);
@@ -760,12 +760,12 @@ static void display_invite(int idx, int number, maskrec *invite,
     if (number >= 0)
       dprintf(idx, "  [%3d] %s %s\n", number, invite->mask, s);
     else
-      dprintf(idx, "INVITE: %s %s\n", invite->mask, s);
+      dprintf(idx, ":%s INVITE: %s %s\n", botname,invite->mask, s);
   } else if (show_inact) {
     if (number >= 0)
       dprintf(idx, "! [%3d] %s %s\n", number, invite->mask, s);
     else
-      dprintf(idx, "INVITE (%s): %s %s\n", MODES_INACTIVE, invite->mask, s);
+      dprintf(idx, ":%s INVITE (%s): %s %s\n", botname,MODES_INACTIVE, invite->mask, s);
   } else
     return;
   dprintf(idx, "        %s: %s\n", invite->user, invite->desc);

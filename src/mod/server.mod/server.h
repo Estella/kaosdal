@@ -107,6 +107,23 @@ struct server_list {
   char *realname;
 };
 
+
+#include <src/uthash.h>
+
+struct hobyni {
+	char *nick;
+	char *user;
+	char *host;
+	UT_hash_handle hh;
+};
+
+extern struct hobyni *hostbynick;
+
+extern void change_nick(char*, char*);
+extern void del_nick(char*);
+extern void add_nick(char*, char*, char*);
+extern char *find_host_by_nick(char*);
+
 /* Available net types.  */
 enum {
   NETT_EFNET        = 0, /* EFnet                    */

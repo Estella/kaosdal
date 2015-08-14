@@ -20,7 +20,7 @@ modules: ../../../server.$(MOD_EXT)
 	mv server.o ../
 
 ../../../server.$(MOD_EXT): ../server.o
-	$(LD) -o ../../../server.$(MOD_EXT) ../server.o $(XLIBS) $(MODULE_XLIBS) ../../hash.o
+	$(LD) -o ../../../server.$(MOD_EXT) ../server.o $(XLIBS) $(MODULE_XLIBS)
 	$(STRIP) ../../../server.$(MOD_EXT)
 
 depend:
@@ -43,4 +43,4 @@ distclean: clean
   ../../../src/compat/strftime.h ../../../src/mod/modvals.h \
   ../../../src/tandem.h .././server.mod/server.h \
   .././server.mod/servmsg.c .././server.mod/cmdsserv.c \
-  .././server.mod/tclserv.c ../../../src/hash.c
+  .././server.mod/tclserv.c

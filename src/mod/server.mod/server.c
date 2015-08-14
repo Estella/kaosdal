@@ -119,6 +119,72 @@ static void msgq_clear(struct msgq_head *qh);
 static int stack_limit;
 static char *realservername;
 
+struct hobyni *hostbynick = NULL;
+
+void del_nick (char *old)
+{
+	struct hobyni *oh;
+	HASH_FIND_STR(hostbynick, old, oh);
+	if (oh != NULL)
+		HASH_DEL(hostbynick, oh);
+	if (oh != NULL)
+		free(oh);
+}
+
+void add_nick (char *nick, char *user, char *host)
+{
+	struct hobyni *h;
+	Context;
+	HASH_FIND_STR(hostbynick, nick, h);
+	Context;
+	if (h!=NULL) {
+	Context;
+		HASH_DEL(hostbynick, h);
+	Context;
+	}
+	Context;
+	h = (struct hobyni *)malloc(sizeof(struct hobyni));
+	Context;
+	h->nick = strdup(nick);
+	Context;
+	h->user = strdup(user); // Hmm... this causes segfaults, but is necessary. WTF...
+	Context;
+	h->host = strdup(host); // I think we have a hole over at chan.c
+	Context;
+	HASH_ADD_KEYPTR(hh, hostbynick, h->nick, strlen(h->nick), h);
+	Context;
+}
+
+void change_nick (char *old, char *nouveau)
+{
+	struct hobyni *oh, *h;
+	char hubuf[64], hhbuf[291];
+	char *hu=hubuf, *hh=hhbuf;
+	HASH_FIND_STR(hostbynick, old, oh);
+	Context;
+	if (oh == NULL) {
+		putlog (LOG_SERV, "*", "Well, it's been a fun ride for %s, but we don't know about them anymore, some how. Just leaving user as old nick. :|", nouveau);
+		return;
+	} // umm, k
+	Context;
+
+	//HASH_ADD_KEYPTR(hh, hostbynick, h->nick, strlen(h->nick), h); // This doesn't actually work for some strange reason.
+	add_nick (nouveau, oh->user, oh->host);
+	Context;
+}
+
+char *find_host_by_nick (char *nick)
+{
+	struct hobyni *h;
+	char outbuf[8192];
+	char *out=outbuf;
+	if (strchr(nick, '.')) return "Is@a.server";
+	HASH_FIND_STR(hostbynick, nick, h);
+	if (h==NULL) return "I@do.not.have.this.user";
+	sprintf(out, "%s@%s", h->user, h->host);
+	return out;
+}
+
 #include "servmsg.c"
 
 #define MAXPENALTY 10
@@ -531,7 +597,7 @@ static void parse_q(struct msgq_head *q, char *oldnick, char *newnick)
 
   for (m = q->head; m;) {
     changed = 0;
-    if (optimize_kicks == 2 && !egg_strncasecmp(m->msg, "KICK ", 5)) {
+    if (optimize_kicks == 2 && !egg_strncasecmp(m->msg, "KICK ",5)) {
       newnicks[0] = 0;
       strncpyz(buf, m->msg, sizeof buf);
       msg = buf;
@@ -549,7 +615,7 @@ static void parse_q(struct msgq_head *q, char *oldnick, char *newnick)
         } else
           egg_snprintf(newnicks, sizeof newnicks, ",%s", nick);
       }
-      egg_snprintf(newmsg, sizeof newmsg, "KICK %s %s %s", chan,
+      egg_snprintf(newmsg, sizeof newmsg, ":%s KICK %s %s %s", botname,chan,
                    newnicks + 1, msg);
     }
     if (changed) {
@@ -588,7 +654,7 @@ static void purge_kicks(struct msgq_head *q)
   struct chanset_t *cs;
 
   for (m = q->head; m;) {
-    if (!egg_strncasecmp(m->msg, "KICK", 4)) {
+    if (!egg_strncasecmp(m->msg, "KICK",4)) {
       newnicks[0] = 0;
       changed = 0;
       strncpyz(buf, m->msg, sizeof buf);
@@ -631,7 +697,7 @@ static void purge_kicks(struct msgq_head *q)
             q->last = 0;
         } else {
           nfree(m->msg);
-          egg_snprintf(newmsg, sizeof newmsg, "KICK %s %s %s", chan,
+          egg_snprintf(newmsg, sizeof newmsg, ":%s KICK %s %s %s", botname,chan,
                        newnicks + 1, reason);
           m->msg = nmalloc(strlen(newmsg) + 1);
           m->len = strlen(newmsg);
@@ -673,7 +739,7 @@ static int deq_kick(int which)
     return 0;
   }
 
-  if (egg_strncasecmp(h->head->msg, "KICK", 4))
+  if (egg_strncasecmp(h->head->msg, "KICK",4))
     return 0;
 
   if (optimize_kicks == 2) {
@@ -682,7 +748,7 @@ static int deq_kick(int which)
       return 1;
   }
 
-  if (egg_strncasecmp(h->head->msg, "KICK", 4))
+  if (egg_strncasecmp(h->head->msg, "KICK",4))
     return 0;
 
   msg = h->head;
@@ -697,7 +763,7 @@ static int deq_kick(int which)
     nr++;
   }
   for (m = msg->next, lm = NULL; m && (nr < kick_method);) {
-    if (!egg_strncasecmp(m->msg, "KICK", 4)) {
+    if (!egg_strncasecmp(m->msg, "KICK",4)) {
       changed = 0;
       newnicks2[0] = 0;
       strncpyz(buf2, m->msg, sizeof buf2);
@@ -731,7 +797,7 @@ static int deq_kick(int which)
             h->last = 0;
         } else {
           nfree(m->msg);
-          egg_snprintf(newmsg, sizeof newmsg, "KICK %s %s %s", chan2,
+          egg_snprintf(newmsg, sizeof newmsg, ":%s KICK %s %s %s", botname,chan2,
                        newnicks2 + 1, reason);
           m->msg = nmalloc(strlen(newmsg) + 1);
           m->len = strlen(newmsg);
@@ -745,7 +811,7 @@ static int deq_kick(int which)
     else
       m = h->head->next;
   }
-  egg_snprintf(newmsg, sizeof newmsg, "KICK %s %s %s", chan, newnicks + 1,
+  egg_snprintf(newmsg, sizeof newmsg, ":%s KICK %s %s %s", botname,chan, newnicks + 1,
                reason);
   check_tcl_out(which, newmsg, 1);
   write_to_server(newmsg, strlen(newmsg));
@@ -807,7 +873,7 @@ static void queue_server(int which, char *msg, int len)
   len = strlen(buf);
 
   /* No queue for PING and PONG - drummer */
-  if (!egg_strncasecmp(buf, "PING", 4) || !egg_strncasecmp(buf, "PONG", 4)) {
+  if (!egg_strncasecmp(buf, "PING", 4) || !egg_strncasecmp(buf, "PONG",4)) {
     if (buf[1] == 'I' || buf[1] == 'i')
       lastpingtime = now;
     check_tcl_out(which, buf, 1);
@@ -1555,22 +1621,22 @@ static int ctcp_DCC_CHAT(char *nick, char *from, char *handle,
   get_user_flagrec(u, &fr, 0);
   if (dcc_total == max_dcc && increase_socks_max()) {
     if (!quiet_reject)
-      dprintf(DP_HELP, "NOTICE %s :%s\n", nick, DCC_TOOMANYDCCS1);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s\n", botname,nick, DCC_TOOMANYDCCS1);
     putlog(LOG_MISC, "*", DCC_TOOMANYDCCS2, "CHAT", param, nick, from);
   } else if (!(glob_party(fr) || (!require_p && chan_op(fr)))) {
     if (glob_xfer(fr))
       return 0;                 /* Allow filesys to pick up the chat */
     if (!quiet_reject)
-      dprintf(DP_HELP, "NOTICE %s :%s\n", nick, DCC_REFUSED2);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s\n", botname,nick, DCC_REFUSED2);
     putlog(LOG_MISC, "*", "%s: %s!%s", DCC_REFUSED, nick, from);
   } else if (u_pass_match(u, "-")) {
     if (!quiet_reject)
-      dprintf(DP_HELP, "NOTICE %s :%s\n", nick, DCC_REFUSED3);
+      dprintf(DP_HELP, ":%s NOTICE %s :%s\n", botname,nick, DCC_REFUSED3);
     putlog(LOG_MISC, "*", "%s: %s!%s", DCC_REFUSED4, nick, from);
   } else if (atoi(prt) < 1024 || atoi(prt) > 65535) {
     /* Invalid port */
     if (!quiet_reject)
-      dprintf(DP_HELP, "NOTICE %s :%s (invalid port)\n", nick,
+      dprintf(DP_HELP, ":%s NOTICE %s :%s (invalid port)\n", botname,nick,
               DCC_CONNECTFAILED1);
     putlog(LOG_MISC, "*", "%s: CHAT (%s!%s)", DCC_CONNECTFAILED3, nick, from);
   } else {
@@ -1578,7 +1644,7 @@ static int ctcp_DCC_CHAT(char *nick, char *from, char *handle,
       return 1;
     i = new_dcc(&DCC_DNSWAIT, sizeof(struct dns_info));
     if (i < 0) {
-      putlog(LOG_MISC, "*", "DCC connection: CHAT (%s!%s)", nick, ip);
+      putlog(LOG_MISC, "*", ":%s DCC connection: CHAT (%s!%s)", botname,nick, ip);
       return 1;
     }
 #ifdef TLS
@@ -1635,7 +1701,7 @@ static void dcc_chat_hostresolved(int i)
 #endif
   if (buf[0]) {
     if (!quiet_reject)
-      dprintf(DP_HELP, "NOTICE %s :%s (%s)\n", dcc[i].nick,
+      dprintf(DP_HELP, ":%s NOTICE %s :%s (%s)\n", botname,dcc[i].nick,
               DCC_CONNECTFAILED1, buf);
     putlog(LOG_MISC, "*", "%s: CHAT (%s!%s)", DCC_CONNECTFAILED2,
            dcc[i].nick, dcc[i].host);
@@ -1651,7 +1717,7 @@ static void dcc_chat_hostresolved(int i)
     strcpy(dcc[i].u.chat->con_chan, (chanset) ? chanset->dname : "*");
     dcc[i].timeval = now;
     /* Ok, we're satisfied with them now: attempt the connect */
-    putlog(LOG_MISC, "*", "DCC connection: CHAT (%s!%s)", dcc[i].nick,
+    putlog(LOG_MISC, "*", ":%s DCC connection: CHAT (%s!%s)", botname,dcc[i].nick,
            dcc[i].host);
 #ifdef TLS
     /* For SSL connections, the handshake callback will determine
@@ -1691,7 +1757,7 @@ static void server_5minutely()
       putlog(LOG_SERV, "*", IRC_SERVERSTONED);
     } else if (!trying_server) {
       /* Check for server being stoned. */
-      dprintf(DP_MODE, "PING :%li\n", now);
+      dprintf(DP_MODE, ":%s PING :%li\n", botname,now);
       lastpingcheck = now;
     }
   }
