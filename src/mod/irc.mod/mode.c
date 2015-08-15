@@ -190,9 +190,9 @@ static void flush_mode(struct chanset_t *chan, int pri)
   }
   if (out[0]) {
     if (pri == QUICK)
-      dprintf(DP_MODE, ":%s MODE %s %s\n", botname,chan->name, out);
+      dprintf(DP_MODE, ":%s MODE %s %ld %s\n", botname,chan->name, get_stamp(chan->name), out);
     else
-      dprintf(DP_SERVER, ":%s MODE %s %s\n", botname,chan->name, out);
+      dprintf(DP_SERVER, ":%s MODE %s %ld %s\n", botname,chan->name, get_stamp(chan->name), out);
     char buf[512], *obuf=buf;
     strcat(obuf, chan->name);
     strcat(obuf, " ");
@@ -367,7 +367,18 @@ static void real_add_mode(struct chanset_t *chan,
       }
     }
   }
-  flush_mode(chan, QUICK);
+  modes = modesperline;         /* Check for full buffer. */
+  for (i = 0; i < modesperline; i++)
+    if (chan->cmode[i].type)
+      modes--;
+  if (include_lk && chan->limit)
+    modes--;
+  if (include_lk && chan->rmkey)
+    modes--;
+  if (include_lk && chan->key)
+    modes--;
+  if (modes < 1)
+    flush_mode(chan, NORMAL);   /* Full buffer! Flush modes. */
 }
 
 

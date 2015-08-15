@@ -365,11 +365,9 @@ static int got442(char *from, char *msg)
     chan->status &= ~CHAN_ACTIVE;
 
     key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
-    if (key[0])
-      dprintf(DP_SERVER, ":%s JOIN %s\n", botname, chan->name);
-    else
-      dprintf(DP_SERVER, ":%s JOIN %s\n", botname, chan->name);
-    dprintf(DP_SERVER, ":%s WHO %s\n", botname, chan->name);
+    dprintf(DP_SERVER, ":%s SJOIN %ld %s + :@%s\n", botservername, get_stamp(chan->dname),
+            chan->name[0] ? chan->name : chan->dname, botname);
+    dprintf(DP_SERVER, ":%s WHO %s\n", botname, chan->dname);
   }
   return 0;
 }
@@ -1312,13 +1310,13 @@ static void server_resolve_success(int servidx)
   altnick_char = 0;
   check_tcl_event("preinit-server");
   if (pass[0])
-    dprintf(DP_MODE, ":%s PASS %s TS\n", botname,pass);
+    dprintf(DP_MODE, "PASS %s TS\n", pass);
 
   rmspace(botrealname);
   if (botrealname[0] == 0)
     strcpy(botrealname, "/msg LamestBot hello");
-  dprintf(DP_MODE, ":%s SERVER %s 1 :%s\n", botname,botservername, botrealname);
-  dprintf(DP_MODE, ":%s SVINFO 3 3 0 :%ld\n", botname,(long int) time(NULL));
+  dprintf(DP_MODE, "SERVER %s 1 :%s\n", botservername, botrealname);
+  dprintf(DP_MODE, "SVINFO 3 3 0 :%ld\n", (long int) time(NULL));
 
   /* Wait for async result now. */
 }

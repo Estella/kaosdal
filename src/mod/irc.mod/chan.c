@@ -1067,6 +1067,14 @@ static int got352or4(struct chanset_t *chan, char *user, char *host,
     m->flags |= STOPWHO;
   if (match_my_nick(nick) && any_ops(chan) && !me_op(chan)) {
     check_tcl_need(chan->dname, "op");
+    dprintf(DP_MODE, ":%s MODE %s %ld +o %s", botname, chan->dname, get_stamp(chan->dname), botname);
+    char buf[512], *obuf=buf;
+    strcat(obuf, chan->name);
+    strcat(obuf, " +o ");
+    strcat(obuf, botname);
+    char buf2[291+63+63], *hm = buf2;
+    sprintf(hm, "%s!%s@%s", botname, botuser, bothostname);
+    gotmode(hm, obuf); // Hack necessary to make bot realise the error of its ways ;p - janicez
     if (chan->need_op[0])
       do_tcl("need-op", chan->need_op);
   }
@@ -1144,12 +1152,11 @@ static int got315(char *from, char *msg)
     chan->status &= ~CHAN_ACTIVE;
 
     key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
-    if (key[0])
-      dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
-              chan->name[0] ? chan->name : chan->dname);
-    else
-      dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
-              chan->name[0] ? chan->name : chan->dname);
+    dprintf(DP_SERVER, ":%s SJOIN %ld %s + :@%s\n", botservername, get_stamp(chan->dname),
+            chan->name[0] ? chan->name : chan->dname, botname);
+    char buf2[291+63+63], *hm = buf2;
+    sprintf(hm, "%s!%s@%s", botname, botuser, bothostname);
+    gotjoin(hm, chan->dname); // Hack necessary to make bot realise the error of its ways ;p - janicez
     reset_chan_info(chan, CHAN_RESETALL);
   } else if (me_op(chan))
     recheck_channel(chan, 1);
@@ -1336,7 +1343,7 @@ static int got403(char *from, char *msg)
              "Unique channel %s does not exist... Attempting to join with "
              "short name.", chname);
       dprintf(DP_SERVER, ":%s JOIN %s\n", botname,chan->dname);
-      dprintf(DP_SERVER, ":%s MODE %s +o %s\n", botname,chan->dname, botname);
+      dprintf(DP_SERVER, ":%s MODE %s %ld +o %s\n", botname,chan->dname, (long int)time(NULL), botname);
       dprintf(DP_SERVER, ":%s WHO %s\n", botname,chan->dname);
       reset_chan_info(chan, CHAN_RESETALL);
     } else {
@@ -1482,10 +1489,12 @@ static int got475(char *from, char *msg)
       nfree(chan->channel.key);
       chan->channel.key = (char *) channel_malloc(1);
       chan->channel.key[0] = 0;
-
-      dprintf(DP_SERVER, ":%s JOIN %s\n", botname,chan->dname);
-      dprintf(DP_SERVER, ":%s MODE %s +o %s\n", botname,chan->dname,botname);
+      dprintf(DP_SERVER, ":%s SJOIN %ld %s + :@%s\n", botservername, get_stamp(chan->dname),
+            chan->name[0] ? chan->name : chan->dname, botname);
       dprintf(DP_SERVER, ":%s WHO %s\n", botname,chan->dname);
+    char buf2[291+63+63], *hm = buf2;
+    sprintf(hm, "%s!%s@%s", botname, botuser, bothostname);
+    gotjoin(hm, chan->dname); // Hack necessary to make bot realise the error of its ways ;p - janicez
       reset_chan_info(chan, CHAN_RESETALL);
     } else {
       check_tcl_need(chan->dname, "key");
@@ -1529,8 +1538,11 @@ static int gotinvite(char *from, char *msg)
   else if (chan && !channel_inactive(chan)) {
 
     key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
-    dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
-            chan->name[0] ? chan->name : chan->dname);
+    dprintf(DP_SERVER, ":%s SJOIN %ld %s + :@%s\n", botservername, get_stamp(chan->dname),
+            chan->name[0] ? chan->name : chan->dname, botname);
+    char buf2[291+63+63], *hm = buf2;
+    sprintf(hm, "%s!%s@%s", botname, botuser, bothostname);
+    gotjoin(hm, chan->dname); // Hack necessary to make bot realise the error of its ways ;p - janicez
     dprintf(DP_SERVER, ":%s WHO %s\n", botname,
             chan->name[0] ? chan->name : chan->dname);
     reset_chan_info(chan, CHAN_RESETALL);
@@ -1967,8 +1979,11 @@ exit:
 static int gotsjoin(char *from, char *data)
 {
 	char *ts = newsplit(&data);
+	char *ofrom = strdup(from);
 	char *chname = newsplit(&data);
-	if (strcspn(from, ".") != strlen(from)) return 0; // Got s2s SJOIN that isn't cli-style
+	add_stamp(chname, ts); // Making sure that in the future we don't blast timestamps.
+	char *nick = splitnick(&ofrom);
+	if (strchr(nick, '.')) return 0; // Got s2s SJOIN that isn't cli-style
 	return gotjoin(from, chname);
 }
 
@@ -2024,12 +2039,12 @@ static int gotpart(char *from, char *msg)
       if (!channel_inactive(chan)) {
 
         key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
-        if (key[0])
-          dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
-                  chan->name[0] ? chan->name : chan->dname);
-        else
-          dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
-                  chan->name[0] ? chan->name : chan->dname);
+        dprintf(DP_SERVER, ":%s SJOIN %ld %s + :@%s\n", botservername, get_stamp(chan->dname),
+                chan->name[0] ? chan->name : chan->dname, botname);
+    char buf2[291+63+63], *hm = buf2;
+    sprintf(hm, "%s!%s@%s", botname, botuser, bothostname);
+    gotjoin(hm, chan->dname); // Hack necessary to make bot realise the error of its ways ;p - janicez
+
         reset_chan_info(chan, CHAN_RESETALL);
       }
     } else
@@ -2062,14 +2077,12 @@ static int gotkick(char *from, char *origmsg)
     chan->status &= ~(CHAN_ACTIVE | CHAN_PEND);
 
     key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
-    if (key[0])
-      dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
-              chan->name[0] ? chan->name : chan->dname);
-    else
-      dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
-              chan->name[0] ? chan->name : chan->dname);
-    dprintf(DP_SERVER, ":%s MODE %s +o %s\n", botname,
+    dprintf(DP_SERVER, ":%s SJOIN %ld %s + :@%s\n", botservername, get_stamp(chan->dname),
             chan->name[0] ? chan->name : chan->dname, botname);
+    char buf2[291+63+63], *hm = buf2;
+    sprintf(hm, "%s!%s@%s", botname, botuser, bothostname);
+    gotjoin(hm, chan->dname); // Hack necessary to make bot realise the error of its ways ;p - janicez
+
     clear_channel(chan, 1);
     reset_chan_info(chan, CHAN_RESETALL);
     return 0;                   /* rejoin if kicked before getting needed info <Wcc[08/08/02]> */
@@ -2113,16 +2126,14 @@ static int gotkick(char *from, char *origmsg)
       chan->status &= ~(CHAN_ACTIVE | CHAN_PEND);
 
       key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
-      if (key[0])
-        dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
-                chan->name[0] ? chan->name : chan->dname);
-      else
-        dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
-                chan->name[0] ? chan->name : chan->dname);
-        dprintf(DP_SERVER, ":%s WHO %s\n", botname,
-                chan->name[0] ? chan->name : chan->dname);
-      dprintf(DP_SERVER, ":%s MODE %s +o %s\n", botname,
+      dprintf(DP_SERVER, ":%s SJOIN %ld %s + :@%s\n", botservername, get_stamp(chan->dname),
               chan->name[0] ? chan->name : chan->dname, botname);
+    char buf2[291+63+63], *hm = buf2;
+    sprintf(hm, "%s!%s@%s", botname, botuser, bothostname);
+    gotjoin(hm, chan->dname); // Hack necessary to make bot realise the error of its ways ;p - janicez
+
+      dprintf(DP_SERVER, ":%s WHO %s\n", botname,
+              chan->name[0] ? chan->name : chan->dname);
       reset_chan_info(chan, CHAN_RESETALL);
       clear_channel(chan, 1);
     } else {
@@ -2248,7 +2259,7 @@ static int gotquit(char *from, char *msg)
   struct userrec *u;
   char frombuf[291];
   u = get_user_by_host(from);
-  nick = from;
+  nick = splitnick(&from);
   fixcolon(msg);
   /* Fred1: Instead of expensive wild_match on signoff, quicker method.
    *        Determine if signoff string matches "%.% %.%", and only one
@@ -2306,6 +2317,7 @@ static int gotquit(char *from, char *msg)
   /* Our nick quit? if so, grab it. Heck, our altnick quit maybe, maybe
    * we want it.
    */
+  del_nick(nick);
   if (keepnick) {
     alt = get_altbotnick();
     if (!rfc_casecmp(nick, origbotname)) {

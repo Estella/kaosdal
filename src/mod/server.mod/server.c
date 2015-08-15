@@ -120,6 +120,7 @@ static int stack_limit;
 static char *realservername;
 
 struct hobyni *hostbynick = NULL;
+struct chts *chan_ts = NULL;
 
 void del_nick (char *old)
 {
@@ -153,6 +154,36 @@ void add_nick (char *nick, char *user, char *host)
 	Context;
 	HASH_ADD_KEYPTR(hh, hostbynick, h->nick, strlen(h->nick), h);
 	Context;
+}
+
+void add_stamp (char *channel, char *stamp)
+{
+	struct chts *h;
+	Context;
+	HASH_FIND_STR(chan_ts, channel, h);
+	Context;
+	if (h!=NULL) {
+	Context;
+		HASH_DEL(chan_ts, h);
+	Context;
+	}
+	Context;
+	h = (struct chts *)malloc(sizeof(struct chts));
+	Context;
+	h->channel = strdup(channel);
+	Context;
+	h->timestamp = atol(stamp);
+	Context;
+	HASH_ADD_KEYPTR(hh, chan_ts, h->channel, strlen(h->channel), h);
+	Context;
+}
+
+long int get_stamp (char *channel)
+{
+	struct chts *h;
+	HASH_FIND_STR(chan_ts, channel, h);
+	if (h==NULL) return (long int) time(NULL);
+	return h->timestamp;
 }
 
 void change_nick (char *old, char *nouveau)

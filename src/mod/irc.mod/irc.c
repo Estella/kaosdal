@@ -417,7 +417,7 @@ static void reset_chan_info(struct chanset_t *chan, int reset)
   char beI[4] = "\0";
   /* Leave the channel if we aren't supposed to be there */
   if (channel_inactive(chan)) {
-    dprintf(DP_MODE, ":%s PART %s\n", botname,chan->name);
+    dprintf(DP_MODE, ":%s PART %s\n", botname,chan->dname);
     return;
   }
 
@@ -425,10 +425,11 @@ static void reset_chan_info(struct chanset_t *chan, int reset)
   if (channel_pending(chan))
     return;
 
+  dprintf(DP_MODE, ":%s SJOIN %ld %s + :@%s\n", botservername, get_stamp(chan->dname),
+          chan->name[0] ? chan->name : chan->dname, botname);
   clear_channel(chan, reset);
-  dprintf(DP_MODE, ":%s JOIN %s\n", botname,chan->name);
   //dprintf(DP_MODE, ":%s MODE %s +o %s\n", botname,chan->name,botname);
-  gotjoin(botname, chan->name);
+  gotjoin(botname, chan->dname);
   if ((reset & CHAN_RESETBANS) && !(chan->status & CHAN_ASKEDBANS)) {
     chan->status |= CHAN_ASKEDBANS;
     strcat(beI, "b");
@@ -444,7 +445,7 @@ static void reset_chan_info(struct chanset_t *chan, int reset)
     strcat(beI, "I");
   }
   if (beI[0])
-    dprintf(DP_MODE, ":%s MODE %s +%s\n", botname,chan->name, beI);
+    dprintf(DP_MODE, ":%s MODE %s +%s\n", botname,chan->dname, beI);
   if (reset & CHAN_RESETMODES) {
     /* done here to keep expmem happy, as this is accounted in
        irc.mod, not channels.mod where clear_channel() resides */
@@ -452,7 +453,7 @@ static void reset_chan_info(struct chanset_t *chan, int reset)
     chan->channel.key = (char *) channel_malloc (1);
     chan->channel.key[0] = 0;
     chan->status &= ~CHAN_ASKEDMODES;
-    dprintf(DP_MODE, ":%s MODE %s\n", botname,chan->name);
+    dprintf(DP_MODE, ":%s MODE %s\n", botname,chan->dname);
   }
   if (reset & CHAN_RESETWHO) {
     chan->status |= CHAN_PEND;
@@ -460,7 +461,7 @@ static void reset_chan_info(struct chanset_t *chan, int reset)
     refresh_who_chan(chan->name);
   }
   if (reset & CHAN_RESETTOPIC)
-    dprintf(DP_MODE, ":%s TOPIC %s\n", botname,chan->name);
+    dprintf(DP_MODE, ":%s TOPIC %s\n", botname,chan->dname);
 }
 
 /* Leave the specified channel and notify registered Tcl procs. This
@@ -549,14 +550,8 @@ static void check_lonely_channel(struct chanset_t *chan)
     if (chan->name[0] != '+') { /* Its pointless to cycle + chans for ops */
       putlog(LOG_MISC, "*", "Trying to cycle %s to regain ops.", chan->dname);
       dprintf(DP_MODE, ":%s PART %s\n", botname,chan->name);
-
-      /* If it's a !chan, we need to recreate the channel with !!chan <cybah> */
-      if (chan->key_prot[0])
-        dprintf(DP_MODE, ":%s JOIN %s%s %s\n", botname,(chan->dname[0] == '!') ? "!" : "",
-                chan->dname, chan->key_prot);
-      else
-        dprintf(DP_MODE, ":%s JOIN %s%s\n", botname,(chan->dname[0] == '!') ? "!" : "",
-                chan->dname);
+      dprintf(DP_SERVER, ":%s SJOIN %ld %s + :@%s\n", botservername, get_stamp(chan->dname),
+              chan->name[0] ? chan->name : chan->dname, botname);
       reset_chan_info(chan, CHAN_RESETALL);
       chan->status &= ~CHAN_WHINED;
     }
@@ -704,9 +699,7 @@ static void check_expired_chanstuff()
     } else if (!channel_inactive(chan) && !channel_pending(chan)) {
 
       key = chan->channel.key[0] ? chan->channel.key : chan->key_prot;
-      dprintf(DP_SERVER, ":%s JOIN %s\n", botname,
-              chan->name[0] ? chan->name : chan->dname);
-      dprintf(DP_SERVER, ":%s MODE %s +o %s\n", botname,
+      dprintf(DP_SERVER, ":%s SJOIN %ld %s + :@%s\n", botservername, get_stamp(chan->dname),
               chan->name[0] ? chan->name : chan->dname, botname);
       reset_chan_info(chan, CHAN_RESETALL);
     }
@@ -1229,9 +1222,7 @@ char *irc_start(Function *global_funcs)
   }
   for (chan = chanset; chan; chan = chan->next) {
     if (!channel_inactive(chan)) {
-        dprintf(DP_MODE, ":%s JOIN %s\n", botname,
-                chan->name[0] ? chan->name : chan->dname);
-        dprintf(DP_MODE, ":%s MODE %s +o %s\n", botname,
+        dprintf(DP_SERVER, ":%s SJOIN %ld %s + :@%s\n", botservername, get_stamp(chan->dname),
                 chan->name[0] ? chan->name : chan->dname, botname);
         reset_chan_info(chan, CHAN_RESETALL);
     } else {

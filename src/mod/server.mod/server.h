@@ -117,11 +117,20 @@ struct hobyni {
 	UT_hash_handle hh;
 };
 
+struct chts {
+	char *channel;
+	long int timestamp;
+	UT_hash_handle hh;
+};
+
 extern struct hobyni *hostbynick;
+extern struct chts *chan_ts;
 
 extern void change_nick(char*, char*);
 extern void del_nick(char*);
 extern void add_nick(char*, char*, char*);
+extern void add_stamp(char*, char*);
+extern long int get_stamp(char*);
 extern char *find_host_by_nick(char*);
 
 /* Available net types.  */
