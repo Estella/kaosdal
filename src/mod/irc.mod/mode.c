@@ -190,13 +190,11 @@ static void flush_mode(struct chanset_t *chan, int pri)
   }
   if (out[0]) {
     if (pri == QUICK)
-      dprintf(DP_MODE, ":%s MODE %s %ld %s\n", botname,chan->name, get_stamp(chan->name), out);
+      dprintf(DP_MODE, ":%s MODE %s %ld %s\n", botname, chan->name, get_stamp(chan->name), out);
     else
-      dprintf(DP_SERVER, ":%s MODE %s %ld %s\n", botname,chan->name, get_stamp(chan->name), out);
+      dprintf(DP_SERVER, ":%s MODE %s %ld %s\n", botname, chan->name, get_stamp(chan->name), out);
     char buf[512], *obuf=buf;
-    strcat(obuf, chan->name);
-    strcat(obuf, " ");
-    strcat(obuf, out);
+    sprintf(obuf, "%s %ld %s", chan->name, get_stamp(chan->name), out);
     char buf2[291+63+63], *hm = buf2;
     sprintf(hm, "%s!%s@%s", botname, botuser, bothostname);
     gotmode(hm, obuf); // Hack necessary to make bot realise the error of its ways ;p - janicez
@@ -1032,6 +1030,7 @@ static int gotmode(char *from, char *origmsg)
         msg[0] == '7' ||
         msg[0] == '8' ||
         msg[0] == '9' ) discard = newsplit(&msg);
+    else discard = "unknown";
     chg = newsplit(&msg);
     reversing = 0;
     chan = findchan(ch);
@@ -1042,8 +1041,8 @@ static int gotmode(char *from, char *origmsg)
       z = strlen(msg);
       if (msg[--z] == ' ')      /* I hate cosmetic bugs :P -poptix */
         msg[z] = 0;
-      putlog(LOG_MODES, chan->dname, "%s: mode change '%s %s' by %s", ch, chg,
-             msg, from);
+      putlog(LOG_MODES, chan->dname, "%s: mode change '%s %s' TS %s by %s", ch, chg,
+             msg, discard, from);
       u = get_user_by_host(from);
       get_user_flagrec(u, &user, ch);
       nick = splitnick(&from);

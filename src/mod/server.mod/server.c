@@ -159,7 +159,9 @@ void add_nick (char *nick, char *user, char *host)
 void add_stamp (char *channel, char *stamp)
 {
 	struct chts *h;
+	int i;
 	Context;
+	for (i = 0; channel[i]; i++) channel[i] = tolower(channel[i]);
 	HASH_FIND_STR(chan_ts, channel, h);
 	Context;
 	if (h!=NULL) {
@@ -181,6 +183,8 @@ void add_stamp (char *channel, char *stamp)
 long int get_stamp (char *channel)
 {
 	struct chts *h;
+	int i;
+	for (i = 0; channel[i]; i++) channel[i] = tolower(channel[i]);
 	HASH_FIND_STR(chan_ts, channel, h);
 	if (h==NULL) return (long int) time(NULL);
 	return h->timestamp;

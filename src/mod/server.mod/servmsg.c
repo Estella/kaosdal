@@ -27,6 +27,7 @@
 static time_t last_ctcp = (time_t) 0L;
 static int count_ctcp = 0;
 static char altnick_char = 0;
+static int already_on = 0;
 
 /* We try to change to a preferred unique nick here. We always first try the
  * specified alternate nick. If that failes, we repeatedly modify the nick
@@ -292,6 +293,8 @@ static int got001(char *from, char *msg)
   struct chanset_t *chan;
   struct server_list *x = serverlist;
 
+  if (already_on) return;
+  already_on = 1;
   /* FIXME - x should never be NULL anywhere in this function, but
    * apparently it sometimes is. */
   if (x) {

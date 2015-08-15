@@ -353,7 +353,8 @@ static int killmember(struct chanset_t *chan, char *nick)
  */
 static int me_op(struct chanset_t *chan)
 {
-  return 1; // Due to being an S2S bot, it can ALWAYS assume it is an op, even if it isn't, because it will be U:lined if the server admins are not randumbs.
+  //return 1; // Due to being an S2S bot, it can ALWAYS assume it is an op, even if it isn't, because it will be U:lined if the server admins are not randumbs.
+  // Actually no it can't. TS is shit.
   memberlist *mx = NULL;
 
   mx = ismember(chan, botname);
@@ -1222,8 +1223,8 @@ char *irc_start(Function *global_funcs)
   }
   for (chan = chanset; chan; chan = chan->next) {
     if (!channel_inactive(chan)) {
-        dprintf(DP_SERVER, ":%s SJOIN %ld %s + :@%s\n", botservername, get_stamp(chan->dname),
-                chan->name[0] ? chan->name : chan->dname, botname);
+//        dprintf(DP_SERVER, ":%s SJOIN %ld %s + :@%s\n", botservername, get_stamp(chan->dname),
+//                chan->name[0] ? chan->name : chan->dname, botname); // Buggy as fuck, do not use until further notice :| - janicez
         reset_chan_info(chan, CHAN_RESETALL);
     } else {
         reset_chan_info(chan, CHAN_RESETALL);

@@ -1068,6 +1068,8 @@ static int got352or4(struct chanset_t *chan, char *user, char *host,
   if (match_my_nick(nick) && any_ops(chan) && !me_op(chan)) {
     check_tcl_need(chan->dname, "op");
     dprintf(DP_MODE, ":%s MODE %s %ld +o %s", botname, chan->dname, get_stamp(chan->dname), botname);
+    putlog(LOG_SERV, "*", "MODE %s %ld +o %s (if this TS does not match with what I reported earlier we are in big trouble)",
+           botname, chan->dname, get_stamp(chan->dname), botname);
     char buf[512], *obuf=buf;
     strcat(obuf, chan->name);
     strcat(obuf, " +o ");
@@ -1982,6 +1984,9 @@ static int gotsjoin(char *from, char *data)
 	char *ofrom = strdup(from);
 	char *chname = newsplit(&data);
 	add_stamp(chname, ts); // Making sure that in the future we don't blast timestamps.
+        putlog(LOG_MISC, chname,
+               "%s has a ts of %ld %s (if these are not equal this is a BUG)",
+               chname, get_stamp(chname), ts);
 	char *nick = splitnick(&ofrom);
 	if (strchr(nick, '.')) return 0; // Got s2s SJOIN that isn't cli-style
 	return gotjoin(from, chname);
